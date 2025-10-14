@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <iostream>
@@ -36,7 +37,7 @@ auto tableau_to_string(const GameState& state) -> std::string {
             if (current_row[i] == c_null_index) {
                 result += "     ";
             } else {
-                std::format_to(std::back_inserter(result), "{:^5}",
+                fmt::format_to(std::back_inserter(result), "{:^5}",
                                card_to_string(current_row[i]));
                 current_row[i] =
                     state.m_deck[static_cast<std::size_t>(current_row[i])];

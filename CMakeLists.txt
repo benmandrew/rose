@@ -31,8 +31,10 @@ target_include_directories(solviz_lib INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
+find_package(fmt CONFIG REQUIRED)
+
 add_executable(solviz src/main.cpp)
-target_link_libraries(solviz PRIVATE solviz_lib)
+target_link_libraries(solviz PRIVATE solviz_lib fmt::fmt)
 
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
 if(CLANG_FORMAT_EXE)
