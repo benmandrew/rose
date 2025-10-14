@@ -1,3 +1,8 @@
+#include <array>
+#include <cstddef>
+#include <string>
+#include <utility>
+
 enum Suit {
     spades = 0,
     hearts = 1,

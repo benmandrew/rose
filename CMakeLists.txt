@@ -62,3 +62,6 @@ else()
 endif()
 
 install(TARGETS solviz RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# Add unit tests
+add_subdirectory(tests)
