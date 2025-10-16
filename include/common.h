@@ -21,7 +21,7 @@ const std::array<std::string, c_num_cards_in_suit> c_rank_strings = {
     "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
 
 inline auto card_to_index(Suit suit, std::size_t rank) -> std::size_t {
-    return rank * c_num_cards_in_suit + static_cast<std::size_t>(suit);
+    return rank * c_num_suits + static_cast<std::size_t>(suit);
 }
 
 inline auto index_to_card(std::size_t index) -> std::pair<Suit, std::size_t> {

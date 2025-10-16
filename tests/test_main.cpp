@@ -2,9 +2,11 @@
 
 #include "common.h"
 
+#define CATCH_CONFIG_MAIN
+
 TEST_CASE("card index roundtrip", "[common]") {
-    for (std::size_t suit = 0; suit < c_num_suits; ++suit) {
-        for (std::size_t rank = 0; rank < c_num_cards_in_suit; ++rank) {
+    for (std::size_t suit = 0; suit < c_num_suits; suit++) {
+        for (std::size_t rank = 0; rank < c_num_cards_in_suit; rank++) {
             auto idx = card_to_index(static_cast<Suit>(suit), rank);
             auto [s, r] = index_to_card(idx);
             REQUIRE(static_cast<std::size_t>(s) == suit);
