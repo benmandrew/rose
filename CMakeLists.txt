@@ -11,6 +11,21 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# If user/configure requested ccache as the compiler launcher but ccache
+# is not available on this machine, unset the launcher variables so the
+# build doesn't fail at compile time trying to run a missing program.
+find_program(_CCACHE_PROGRAM NAMES ccache)
+if(NOT _CCACHE_PROGRAM)
+    if(DEFINED CMAKE_C_COMPILER_LAUNCHER AND CMAKE_C_COMPILER_LAUNCHER)
+        message(WARNING "ccache requested as C compiler launcher but not found; unsetting CMAKE_C_COMPILER_LAUNCHER")
+        set(CMAKE_C_COMPILER_LAUNCHER "" CACHE STRING "" FORCE)
+    endif()
+    if(DEFINED CMAKE_CXX_COMPILER_LAUNCHER AND CMAKE_CXX_COMPILER_LAUNCHER)
+        message(WARNING "ccache requested as CXX compiler launcher but not found; unsetting CMAKE_CXX_COMPILER_LAUNCHER")
+        set(CMAKE_CXX_COMPILER_LAUNCHER "" CACHE STRING "" FORCE)
+    endif()
+endif()
+
 include(GNUInstallDirs)
 
 if(APPLE)
@@ -26,10 +41,13 @@ if(APPLE)
     endif()
 endif()
 
-add_library(solviz_lib INTERFACE)
-target_include_directories(solviz_lib INTERFACE
+add_library(solviz_lib STATIC
+    src/table.cpp
+)
+target_include_directories(solviz_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
+target_link_libraries(solviz_lib PUBLIC fmt::fmt)
 
 find_package(fmt CONFIG QUIET)
 if (NOT TARGET fmt::fmt)
@@ -44,7 +62,7 @@ if (NOT TARGET fmt::fmt)
 endif()
 
 add_executable(solviz src/main.cpp)
-target_link_libraries(solviz PRIVATE solviz_lib fmt::fmt)
+target_link_libraries(solviz PRIVATE solviz_lib)
 
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
 if(CLANG_FORMAT_EXE)
