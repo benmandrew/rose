@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake clang-format ccache
+
+    - name: Cache CMake dependencies (FetchContent)
+      uses: actions/cache@v4
+      with:
+        path: build/_deps
+        key: ${{ runner.os }}-cmake-deps-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-cmake-deps-
+
+    - name: Cache ccache
+      uses: actions/cache@v4
+      with:
+        path: ~/.ccache
+        key: ${{ runner.os }}-ccache-${{ hashFiles('**/*.cpp','**/*.h','**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-ccache-
+
+    - name: Check clang-format (if present)
+      run: |
+        echo "Running clang-format --dry-run"
+        git ls-files '*.cpp' '*.h' '*.hpp' | xargs -r clang-format -style=file -n
+
+    - name: Configure
+      run: |
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+    - name: Build
+      run: |
+        cmake --build build -j
+
+    - name: Run tests
+      run: |
+        ctest --test-dir build --output-on-failure
