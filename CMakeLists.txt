@@ -31,7 +31,17 @@ target_include_directories(solviz_lib INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
-find_package(fmt CONFIG REQUIRED)
+find_package(fmt CONFIG QUIET)
+if (NOT TARGET fmt::fmt)
+    include(FetchContent)
+    message(STATUS "fmt not found via find_package; fetching fmt via FetchContent")
+    FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG 10.1.1
+    )
+    FetchContent_MakeAvailable(fmt)
+endif()
 
 add_executable(solviz src/main.cpp)
 target_link_libraries(solviz PRIVATE solviz_lib fmt::fmt)
