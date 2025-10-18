@@ -80,4 +80,20 @@ TEST_CASE("Table", "[table]") {
                 " K♠                                \n"
                 " Q♥                                \n");
     }
+
+    SECTION("Foundation to Tableau") {
+        table.m_foundation_indices[static_cast<size_t>(Suit::spades)] =
+            CARD("3♠");
+        table.m_tableau_visible_indices[2] = CARD("4♦");
+        REQUIRE(table.header_to_string() ==
+                "Stock:    Waste:    Foundations: 3♠              \n");
+        REQUIRE(table.tableau_to_string() ==
+                "           4♦                      \n");
+        foundation_to_tableau(table, Suit::spades, 2);
+        REQUIRE(table.header_to_string() ==
+                "Stock:    Waste:    Foundations:                 \n");
+        REQUIRE(table.tableau_to_string() ==
+                "           4♦                      \n"
+                "           3♠                      \n");
+    }
 }

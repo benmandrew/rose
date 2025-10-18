@@ -62,3 +62,16 @@ auto tableau_to_tableau(Table& table, size_t from_col, size_t to_col,
     table.m_tableau_visible_indices[to_col] = moving_top;
     return table;
 }
+
+auto foundation_to_tableau(Table& table, Suit from_suit, size_t to_col)
+    -> Table& {
+    assert(to_col < c_tableau_columns);
+    uint8_t foundation_top =
+        table.m_foundation_indices[static_cast<size_t>(from_suit)];
+    assert(foundation_top != c_null_index);
+    assert(table.can_be_placed_on_tableau(to_col, foundation_top));
+    table.m_foundation_indices[static_cast<size_t>(from_suit)] =
+        table.m_deck[static_cast<size_t>(foundation_top)];
+    table.add_to_visible_tableau_column(to_col, foundation_top);
+    return table;
+}
