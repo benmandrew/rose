@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "common.hpp"
+#include "moves.hpp"
 #include "table.hpp"
 
 TEST_CASE("Table default construction", "[table]") {

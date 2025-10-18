@@ -64,4 +64,20 @@ TEST_CASE("Table", "[table]") {
         REQUIRE(table.header_to_string() ==
                 "Stock:    Waste:    Foundations: 3♠              \n");
     }
+
+    SECTION("Waste to Tableau") {
+        table.m_waste_index = CARD("K♠");
+        table.m_deck[CARD("K♠")] = CARD("Q♥");
+        REQUIRE(table.header_to_string() ==
+                "Stock:    Waste: K♠ Foundations:                 \n");
+        waste_to_tableau(table, 0);
+        REQUIRE(table.tableau_to_string() ==
+                " K♠                                \n");
+        REQUIRE(table.header_to_string() ==
+                "Stock:    Waste: Q♥ Foundations:                 \n");
+        waste_to_tableau(table, 0);
+        REQUIRE(table.tableau_to_string() ==
+                " K♠                                \n"
+                " Q♥                                \n");
+    }
 }

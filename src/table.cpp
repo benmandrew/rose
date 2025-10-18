@@ -156,6 +156,7 @@ auto Table::add_to_visible_tableau_column(size_t col_idx, uint8_t card_index)
     assert(col_idx < c_tableau_columns);
     if (m_tableau_visible_indices[col_idx] == c_null_index) {
         m_tableau_visible_indices[col_idx] = card_index;
+        m_deck[static_cast<size_t>(card_index)] = c_null_index;
     } else {
         // Place on top of the visible column, replacing the top pointer
         uint8_t last_index = m_tableau_visible_indices[col_idx];
@@ -223,7 +224,7 @@ auto Table::can_be_placed_on_tableau(size_t to_col, uint8_t card_index) const
     auto [card_suit, card_rank] =
         index_to_card(static_cast<size_t>(card_index));
     if (tableau_top == c_null_index) {
-        return card_rank == c_num_cards_in_suit;
+        return card_rank == c_num_cards_in_suit - 1;
     }
     auto [tableau_suit, tableau_rank] =
         index_to_card(static_cast<size_t>(tableau_top));
