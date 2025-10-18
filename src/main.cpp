@@ -1,9 +1,5 @@
-#include <assert.h>
-
-#include <algorithm>
 #include <iostream>
 
-#include "common.h"
 #include "table.h"
 
 auto game_state_to_string(const Table& state) -> std::string {

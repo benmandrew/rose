@@ -3,7 +3,8 @@ Checks: >
   bugprone-*,
   performance-*,
   modernize-*,
-  readability-*
+  readability-*,
+  -readability-magic-numbers
 
 WarningsAsErrors: ''
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: '^((?!/build/_deps/).)*$'
