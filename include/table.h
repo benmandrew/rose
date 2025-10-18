@@ -42,6 +42,13 @@ class [[gnu::packed]] Table {
     auto move_from_stock_to_waste() -> void;
     auto reset_stock_from_waste() -> void;
 
+    [[nodiscard]] auto can_be_placed_on_foundation(uint8_t card_index) const
+        -> bool;
+
+    [[nodiscard]] auto can_be_placed_on_tableau(size_t to_col,
+                                                uint8_t card_index) const
+        -> bool;
+
    private:
     [[nodiscard]] auto tableau_to_2d() const
         -> std::vector<std::vector<uint8_t>>;

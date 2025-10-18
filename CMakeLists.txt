@@ -70,7 +70,8 @@ if(CLANG_FORMAT_EXE)
     file(GLOB_RECURSE ALL_CXX_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp)
 
     add_custom_target(format
         COMMAND ${CLANG_FORMAT_EXE} -i --style=file ${ALL_CXX_SOURCE_FILES}

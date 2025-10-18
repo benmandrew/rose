@@ -130,7 +130,7 @@ auto Table::header_to_string() const -> std::string {
     fmt::format_to(std::back_inserter(result), "Waste: {:<3}",
                    card_to_string(m_waste_index));
     fmt::format_to(std::back_inserter(result), "Foundations: ");
-    for (size_t suit = 0; suit < c_num_suits; ++suit) {
+    for (size_t suit = 0; suit < c_num_suits; suit++) {
         fmt::format_to(std::back_inserter(result), "{:<4}",
                        card_to_string(m_foundation_indices[suit]));
     }
@@ -201,4 +201,32 @@ auto Table::reset_stock_from_waste() -> void {
     }
     m_stock_index = prev;
     m_waste_index = c_null_index;
+}
+
+auto Table::can_be_placed_on_foundation(uint8_t card_index) const -> bool {
+    auto [card_suit, card_rank] =
+        index_to_card(static_cast<size_t>(card_index));
+    uint8_t foundation_top =
+        m_foundation_indices[static_cast<size_t>(card_suit)];
+    if (foundation_top == c_null_index) {
+        return card_rank == 0;
+    }
+    auto [foundation_suit, foundation_rank] =
+        index_to_card(static_cast<size_t>(foundation_top));
+    return (card_rank == foundation_rank + 1) && (card_suit == foundation_suit);
+}
+
+auto Table::can_be_placed_on_tableau(size_t to_col, uint8_t card_index) const
+    -> bool {
+    assert(to_col < c_tableau_columns);
+    uint8_t tableau_top = m_tableau_visible_indices[to_col];
+    auto [card_suit, card_rank] =
+        index_to_card(static_cast<size_t>(card_index));
+    if (tableau_top == c_null_index) {
+        return card_rank == c_num_cards_in_suit;
+    }
+    auto [tableau_suit, tableau_rank] =
+        index_to_card(static_cast<size_t>(tableau_top));
+    return (card_rank + 1 == tableau_rank) &&
+           (!suit_colours_equal(card_suit, tableau_suit));
 }
