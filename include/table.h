@@ -2,6 +2,7 @@
 #define TABLE_H
 
 #include <assert.h>
+#include <vector>
 
 #include <algorithm>
 

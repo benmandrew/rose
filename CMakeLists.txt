@@ -71,12 +71,12 @@ if(CLANG_FORMAT_EXE)
         ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 
-    add_custom_target(fmt
+    add_custom_target(format
         COMMAND ${CLANG_FORMAT_EXE} -i --style=file ${ALL_CXX_SOURCE_FILES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Running clang-format over source files")
 else()
-    add_custom_target(fmt COMMENT "clang-format not found on PATH")
+    add_custom_target(format COMMENT "clang-format not found on PATH")
 endif()
 
 find_program(CLANG_TIDY_EXE NAMES clang-tidy clang-tidy-14 clang-tidy-15)
@@ -90,9 +90,6 @@ else()
 endif()
 
 install(TARGETS solviz RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-# Add unit tests
-include(CTest)
 
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)

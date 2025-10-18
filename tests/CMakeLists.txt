@@ -10,17 +10,20 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(catch2)
 
-add_executable(tests
+add_executable(test
     test_common.cpp
     test_table.cpp
 )
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain solviz_lib)
-target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(test PRIVATE Catch2::Catch2WithMain solviz_lib)
+target_include_directories(test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 include(CTest)
 include(Catch)
 
-catch_discover_tests(tests)
+catch_discover_tests(test)
 
-# Fallback registration
-add_test(NAME tests COMMAND tests)
+add_custom_target(tests
+    DEPENDS test
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
