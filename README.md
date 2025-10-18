@@ -4,7 +4,7 @@
 mkdir -p build
 cd build
 cmake --build .
-./solviz
+./rose
 ```
 
 ### Run Tests

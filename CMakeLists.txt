@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(solviz
+project(rose
     VERSION 0.1.0
     DESCRIPTION "Visualise the state spaces of Solitaire games"
     LANGUAGES CXX)
@@ -41,14 +41,14 @@ if(APPLE)
     endif()
 endif()
 
-add_library(solviz_lib STATIC
+add_library(rose_lib STATIC
     src/table.cpp
     src/moves.cpp
 )
-target_include_directories(solviz_lib PUBLIC
+target_include_directories(rose_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-target_link_libraries(solviz_lib PUBLIC fmt::fmt)
+target_link_libraries(rose_lib PUBLIC fmt::fmt)
 
 find_package(fmt CONFIG QUIET)
 if (NOT TARGET fmt::fmt)
@@ -62,8 +62,8 @@ if (NOT TARGET fmt::fmt)
     FetchContent_MakeAvailable(fmt)
 endif()
 
-add_executable(solviz src/main.cpp)
-target_link_libraries(solviz PRIVATE solviz_lib)
+add_executable(rose src/main.cpp)
+target_link_libraries(rose PRIVATE rose_lib)
 
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
 if(CLANG_FORMAT_EXE)
@@ -91,9 +91,10 @@ else()
     add_custom_target(lint COMMENT "clang-tidy not found on PATH")
 endif()
 
-install(TARGETS solviz RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS rose RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)
+    enable_testing()
     add_subdirectory(tests)
 endif()
