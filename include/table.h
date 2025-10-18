@@ -1,5 +1,4 @@
-#ifndef TABLE_H
-#define TABLE_H
+#pragma once
 
 #include <cassert>
 #include <vector>
@@ -47,5 +46,3 @@ class [[gnu::packed]] Table {
     [[nodiscard]] auto tableau_to_2d() const
         -> std::vector<std::vector<uint8_t>>;
 };
-
-#endif

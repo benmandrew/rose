@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 #include <algorithm>
 #include <array>
@@ -56,5 +55,3 @@ inline auto random_deck(std::optional<std::mt19937>& rng)
     }
     return cards;
 }
-
-#endif
