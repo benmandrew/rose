@@ -43,6 +43,7 @@ endif()
 
 add_library(solviz_lib STATIC
     src/table.cpp
+    src/moves.cpp
 )
 target_include_directories(solviz_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

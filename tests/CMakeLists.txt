@@ -13,6 +13,7 @@ FetchContent_MakeAvailable(catch2)
 add_executable(test
     test_common.cpp
     test_table.cpp
+    test_moves.cpp
 )
 target_link_libraries(test PRIVATE Catch2::Catch2WithMain solviz_lib)
 target_include_directories(test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)

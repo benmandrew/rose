@@ -5,7 +5,8 @@ Checks: >
   modernize-*,
   readability-*,
   -readability-magic-numbers,
-  -bugprone-chained-comparison
+  -bugprone-chained-comparison,
+  -bugprone-easily-swappable-parameters
 
 WarningsAsErrors: ''
 HeaderFilterRegex: '^((?!/build/_deps/).)*$'
