@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "common.h"
+#include "common.hpp"
 
 TEST_CASE("Card index roundtrip", "[common]") {
     for (size_t suit = 0; suit < c_num_suits; suit++) {

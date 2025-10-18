@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "common.h"
-#include "moves.h"
-#include "table.h"
+#include "common.hpp"
+#include "moves.hpp"
+#include "table.hpp"
 
 TEST_CASE("Tableau", "[moves]") {
     Table table;

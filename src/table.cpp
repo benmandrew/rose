@@ -1,12 +1,12 @@
 
-#include "table.h"
+#include "table.hpp"
 
 #include <fmt/format.h>
 
 #include <cstddef>
 #include <cstdint>
 
-#include "common.h"
+#include "common.hpp"
 
 Table::Table(const std::array<uint8_t, c_num_cards>& deck) {
     m_foundation_indices.fill(c_null_index);

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "table.h"
+#include "table.hpp"
 
 auto game_state_to_string(const Table& state) -> std::string {
     return state.tableau_to_string();

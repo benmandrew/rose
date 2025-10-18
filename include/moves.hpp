@@ -1,6 +1,6 @@
 #pragma once
 
-#include "table.h"
+#include "table.hpp"
 
 enum class MoveType : uint8_t {
     StockToWaste,

@@ -3,7 +3,7 @@
 #include <cassert>
 #include <vector>
 
-#include "common.h"
+#include "common.hpp"
 
 class [[gnu::packed]] Table {
    public:
