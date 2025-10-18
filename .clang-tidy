@@ -4,7 +4,8 @@ Checks: >
   performance-*,
   modernize-*,
   readability-*,
-  -readability-magic-numbers
+  -readability-magic-numbers,
+  -bugprone-chained-comparison
 
 WarningsAsErrors: ''
 HeaderFilterRegex: '^((?!/build/_deps/).)*$'

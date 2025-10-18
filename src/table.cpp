@@ -3,13 +3,32 @@
 
 #include <fmt/format.h>
 
+#include <cstddef>
 #include <cstdint>
+
+#include "common.h"
+
+Table::Table(const std::array<uint8_t, c_num_cards>& deck) {
+    m_foundation_indices.fill(c_null_index);
+    m_tableau_visible_indices.fill(c_null_index);
+    m_tableau_hidden_indices.fill(c_null_index);
+    m_deck.fill(c_null_index);
+    size_t deck_i = 0;
+    for (size_t i = 0; i < c_tableau_columns; i++) {
+        assert(deck_i < c_num_cards);
+        for (size_t j = 0; j < i; j++) {
+            assert(deck_i < c_num_cards);
+            add_to_hidden_tableau_column(i, deck[deck_i++]);
+        }
+        add_to_visible_tableau_column(i, deck[deck_i++]);
+    }
+}
 
 auto Table::n_cards_in_visible_tableau_column(size_t col_idx) const -> size_t {
     assert(col_idx < c_tableau_columns);
     size_t count = 0;
     for (uint8_t idx = m_tableau_visible_indices[col_idx]; idx != c_null_index;
-         idx = m_deck[static_cast<std::size_t>(idx)]) {
+         idx = m_deck[static_cast<size_t>(idx)]) {
         count++;
     }
     return count;
@@ -19,7 +38,7 @@ auto Table::n_cards_in_hidden_tableau_column(size_t col_idx) const -> size_t {
     assert(col_idx < c_tableau_columns);
     size_t count = 0;
     for (uint8_t idx = m_tableau_hidden_indices[col_idx]; idx != c_null_index;
-         idx = m_deck[static_cast<std::size_t>(idx)]) {
+         idx = m_deck[static_cast<size_t>(idx)]) {
         count++;
     }
     return count;
@@ -44,9 +63,9 @@ auto card_to_string(uint8_t card_index) -> std::string {
         return "?";
     }
     assert(card_index >= 0 && card_index < static_cast<uint8_t>(c_num_cards));
-    auto [suit, rank] = index_to_card(static_cast<std::size_t>(card_index));
-    return c_rank_strings[static_cast<std::size_t>(rank)] +
-           c_suit_strings[static_cast<std::size_t>(suit)];
+    auto [suit, rank] = index_to_card(static_cast<size_t>(card_index));
+    return c_rank_strings[static_cast<size_t>(rank)] +
+           c_suit_strings[static_cast<size_t>(suit)];
 }
 
 auto Table::tableau_to_2d() const -> std::vector<std::vector<uint8_t>> {
@@ -59,7 +78,7 @@ auto Table::tableau_to_2d() const -> std::vector<std::vector<uint8_t>> {
         size_t hidden_length = n_cards_in_hidden_tableau_column(col);
         for (uint8_t card_idx = m_tableau_hidden_indices[col];
              card_idx != c_null_index && idx < max_column_depth;
-             card_idx = m_deck[static_cast<std::size_t>(card_idx)]) {
+             card_idx = m_deck[static_cast<size_t>(card_idx)]) {
             table[hidden_length - idx - 1][col] = c_hidden_index;
             idx++;
         }
@@ -67,7 +86,7 @@ auto Table::tableau_to_2d() const -> std::vector<std::vector<uint8_t>> {
         size_t visible_length = n_cards_in_visible_tableau_column(col);
         for (uint8_t card_idx = m_tableau_visible_indices[col];
              card_idx != c_null_index && idx < max_column_depth;
-             card_idx = m_deck[static_cast<std::size_t>(card_idx)]) {
+             card_idx = m_deck[static_cast<size_t>(card_idx)]) {
             table[hidden_length + visible_length - idx - 1][col] = card_idx;
             idx++;
         }
@@ -90,4 +109,43 @@ auto Table::tableau_to_string() const -> std::string {
         result += "\n";
     }
     return result;
+}
+
+auto Table::add_to_hidden_tableau_column(size_t col_idx, uint8_t card_index)
+    -> void {
+    assert(col_idx < c_tableau_columns);
+    if (m_tableau_hidden_indices[col_idx] == c_null_index) {
+        m_tableau_hidden_indices[col_idx] = card_index;
+    } else {
+        // Place on top of the hidden column, replacing the top pointer
+        uint8_t last_index = m_tableau_hidden_indices[col_idx];
+        m_deck[static_cast<size_t>(card_index)] = last_index;
+        m_tableau_hidden_indices[col_idx] = card_index;
+    }
+}
+
+auto Table::add_to_visible_tableau_column(size_t col_idx, uint8_t card_index)
+    -> void {
+    assert(col_idx < c_tableau_columns);
+    if (m_tableau_visible_indices[col_idx] == c_null_index) {
+        m_tableau_visible_indices[col_idx] = card_index;
+    } else {
+        // Place on top of the visible column, replacing the top pointer
+        uint8_t last_index = m_tableau_visible_indices[col_idx];
+        m_deck[static_cast<size_t>(card_index)] = last_index;
+        m_tableau_visible_indices[col_idx] = card_index;
+    }
+}
+
+auto Table::move_from_hidden_to_visible(size_t col_idx) -> void {
+    assert(col_idx < c_tableau_columns);
+    uint8_t hidden_top = m_tableau_hidden_indices[col_idx];
+    if (hidden_top == c_null_index) {
+        return;
+    }
+    uint8_t next_hidden = m_deck[static_cast<size_t>(hidden_top)];
+    m_tableau_hidden_indices[col_idx] = next_hidden;
+    assert(m_tableau_visible_indices[col_idx] == c_null_index);
+    m_tableau_visible_indices[col_idx] = hidden_top;
+    m_deck[static_cast<size_t>(hidden_top)] = c_null_index;
 }

@@ -23,6 +23,7 @@ class [[gnu::packed]] Table {
         m_tableau_hidden_indices.fill(c_null_index);
         m_deck.fill(c_null_index);
     }
+    Table(const std::array<uint8_t, c_num_cards>& deck);
 
     [[nodiscard]] auto n_cards_in_visible_tableau_column(size_t col_idx) const
         -> size_t;
@@ -32,6 +33,12 @@ class [[gnu::packed]] Table {
         -> size_t;
     [[nodiscard]] auto max_cards_in_tableau_column() const -> size_t;
     [[nodiscard]] auto tableau_to_string() const -> std::string;
+
+    auto add_to_hidden_tableau_column(size_t col_idx, uint8_t card_index)
+        -> void;
+    auto add_to_visible_tableau_column(size_t col_idx, uint8_t card_index)
+        -> void;
+    auto move_from_hidden_to_visible(size_t col_idx) -> void;
 
    private:
     [[nodiscard]] auto tableau_to_2d() const
