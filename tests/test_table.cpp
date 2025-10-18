@@ -62,3 +62,41 @@ TEST_CASE("Tableau", "[table]") {
         }
     }
 }
+
+TEST_CASE("Header", "[table]") {
+    Table table;
+    table.m_stock_index = 0;
+    table.m_waste_index = 20;
+    table.m_foundation_indices = {10, 33, c_null_index, 39};
+    REQUIRE(table.header_to_string() ==
+        "Stock: ?  Waste: 6♠ Foundations: 3♦  9♥      10♣ \n");
+}
+
+TEST_CASE("Stock to Waste", "[table]") {
+    Table table;
+    table.m_stock_index = 0;
+    table.m_deck[0] = 9;
+    table.m_deck[9] = 14;
+    table.m_deck[14] = c_null_index;
+    table.m_waste_index = c_null_index;
+    REQUIRE(table.header_to_string() ==
+        "Stock: ?  Waste:    Foundations:                 \n");
+    table.move_from_stock_to_waste();
+    REQUIRE(table.header_to_string() ==
+        "Stock: ?  Waste: A♠ Foundations:                 \n");
+    table.move_from_stock_to_waste();
+    REQUIRE(table.header_to_string() ==
+        "Stock: ?  Waste: 3♥ Foundations:                 \n");
+    table.move_from_stock_to_waste();
+    REQUIRE(table.header_to_string() ==
+        "Stock:    Waste: 4♦ Foundations:                 \n");
+    table.move_from_stock_to_waste();
+    REQUIRE(table.header_to_string() ==
+        "Stock:    Waste: 4♦ Foundations:                 \n");
+    table.reset_stock_from_waste();
+    REQUIRE(table.header_to_string() ==
+        "Stock: ?  Waste:    Foundations:                 \n");
+    table.reset_stock_from_waste();
+    REQUIRE(table.header_to_string() ==
+        "Stock: ?  Waste:    Foundations:                 \n");
+}

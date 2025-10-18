@@ -22,6 +22,10 @@ Table::Table(const std::array<uint8_t, c_num_cards>& deck) {
         }
         add_to_visible_tableau_column(i, deck[deck_i++]);
     }
+    m_stock_index = deck[deck_i++];
+    for (; deck_i < c_num_cards; deck_i++) {
+        m_deck[static_cast<size_t>(deck[deck_i - 1])] = deck[deck_i];
+    }
 }
 
 auto Table::n_cards_in_visible_tableau_column(size_t col_idx) const -> size_t {
@@ -60,7 +64,10 @@ auto Table::max_cards_in_tableau_column() const -> size_t {
 
 auto card_to_string(uint8_t card_index) -> std::string {
     if (card_index == c_hidden_index) {
-        return "?";
+        return c_hidden_card_string;
+    }
+    if (card_index == c_null_index) {
+        return c_no_card_string;
     }
     assert(card_index >= 0 && card_index < static_cast<uint8_t>(c_num_cards));
     auto [suit, rank] = index_to_card(static_cast<size_t>(card_index));
@@ -111,6 +118,26 @@ auto Table::tableau_to_string() const -> std::string {
     return result;
 }
 
+auto Table::header_to_string() const -> std::string {
+    std::string result;
+    if (m_stock_index == c_null_index) {
+        fmt::format_to(std::back_inserter(result), "Stock: {:<3}",
+                       c_no_card_string);
+    } else {
+        fmt::format_to(std::back_inserter(result), "Stock: {:<3}",
+                       c_hidden_card_string);
+    }
+    fmt::format_to(std::back_inserter(result), "Waste: {:<3}",
+                   card_to_string(m_waste_index));
+    fmt::format_to(std::back_inserter(result), "Foundations: ");
+    for (size_t suit = 0; suit < c_num_suits; ++suit) {
+        fmt::format_to(std::back_inserter(result), "{:<4}",
+                       card_to_string(m_foundation_indices[suit]));
+    }
+    result += "\n";
+    return result;
+}
+
 auto Table::add_to_hidden_tableau_column(size_t col_idx, uint8_t card_index)
     -> void {
     assert(col_idx < c_tableau_columns);
@@ -148,4 +175,30 @@ auto Table::move_from_hidden_to_visible(size_t col_idx) -> void {
     assert(m_tableau_visible_indices[col_idx] == c_null_index);
     m_tableau_visible_indices[col_idx] = hidden_top;
     m_deck[static_cast<size_t>(hidden_top)] = c_null_index;
+}
+
+auto Table::move_from_stock_to_waste() -> void {
+    if (m_stock_index == c_null_index) {
+        return;
+    }
+    uint8_t next_stock = m_deck[static_cast<size_t>(m_stock_index)];
+    m_deck[static_cast<size_t>(m_stock_index)] = m_waste_index;
+    m_waste_index = m_stock_index;
+    m_stock_index = next_stock;
+}
+
+auto Table::reset_stock_from_waste() -> void {
+    if (m_waste_index == c_null_index) {
+        return;
+    }
+    uint8_t prev = c_null_index;
+    uint8_t curr = m_waste_index;
+    while (curr != c_null_index) {
+        uint8_t next = m_deck[static_cast<size_t>(curr)];
+        m_deck[static_cast<size_t>(curr)] = prev;
+        prev = curr;
+        curr = next;
+    }
+    m_stock_index = prev;
+    m_waste_index = c_null_index;
 }

@@ -33,12 +33,15 @@ class [[gnu::packed]] Table {
         -> size_t;
     [[nodiscard]] auto max_cards_in_tableau_column() const -> size_t;
     [[nodiscard]] auto tableau_to_string() const -> std::string;
+    [[nodiscard]] auto header_to_string() const -> std::string;
 
     auto add_to_hidden_tableau_column(size_t col_idx, uint8_t card_index)
         -> void;
     auto add_to_visible_tableau_column(size_t col_idx, uint8_t card_index)
         -> void;
     auto move_from_hidden_to_visible(size_t col_idx) -> void;
+    auto move_from_stock_to_waste() -> void;
+    auto reset_stock_from_waste() -> void;
 
    private:
     [[nodiscard]] auto tableau_to_2d() const
