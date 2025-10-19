@@ -20,9 +20,11 @@ jobs:
       uses: actions/cache@v4
       with:
         path: build/_deps
-        key: ${{ runner.os }}-cmake-deps-${{ hashFiles('**/CMakeLists.txt') }}
+        # Include repository name to avoid cache collisions between repos and
+        # ensure the cache key is tied to the current repo layout.
+        key: ${{ runner.os }}-cmake-deps-${{ github.repository }}-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
-          ${{ runner.os }}-cmake-deps-
+          ${{ runner.os }}-cmake-deps-${{ github.repository }}-
 
     - name: Cache ccache
       uses: actions/cache@v4
