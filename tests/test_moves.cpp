@@ -4,7 +4,27 @@
 #include "moves.hpp"
 #include "table.hpp"
 
-TEST_CASE("Tableau", "[moves]") {
+TEST_CASE("Stock-waste cycling", "[moves]") {
+    Table table;
+    table.m_stock_index = CARD("A♠");
+    table.m_deck[CARD("A♠")] = CARD("2♣");
+    table.m_deck[CARD("2♣")] = CARD("3♦");
+    table.m_deck[CARD("3♦")] = c_null_index;
+    stock_to_waste(table);
+    REQUIRE(table.header_to_string() ==
+            "Stock: ?  Waste: A♠ Foundations:                 \n");
+    stock_to_waste(table);
+    REQUIRE(table.header_to_string() ==
+            "Stock: ?  Waste: 2♣ Foundations:                 \n");
+    stock_to_waste(table);
+    REQUIRE(table.header_to_string() ==
+            "Stock:    Waste: 3♦ Foundations:                 \n");
+    stock_to_waste(table);
+    REQUIRE(table.header_to_string() ==
+            "Stock: ?  Waste:    Foundations:                 \n");
+}
+
+TEST_CASE("Tableau to tableau", "[moves]") {
     Table table;
     table.m_tableau_hidden_indices = {CARD("A♠"), CARD("A♥"), CARD("A♦"),
                                       CARD("A♣"), CARD("2♠"), CARD("2♥"),
@@ -44,7 +64,7 @@ TEST_CASE("Tableau", "[moves]") {
     }
 }
 
-TEST_CASE("Table", "[table]") {
+TEST_CASE("Table movement", "[table]") {
     Table table;
 
     SECTION("Waste to Foundation") {

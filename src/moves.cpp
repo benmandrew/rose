@@ -3,6 +3,10 @@
 #include <sys/types.h>
 
 auto stock_to_waste(Table& table) -> Table& {
+    if (table.m_stock_index == c_null_index) {
+        table.reset_stock_from_waste();
+        return table;
+    }
     table.move_from_stock_to_waste();
     return table;
 }
