@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <iostream>
 
 #include "common.hpp"
 #include "moves.hpp"
@@ -116,4 +117,38 @@ TEST_CASE("Table movement", "[table]") {
                 "           4♦                      \n"
                 "           3♠                      \n");
     }
+}
+
+TEST_CASE("Generate moves", "[moves]") {
+    std::optional<std::mt19937> rng = std::make_optional<std::mt19937>(0);
+    auto deck = random_deck(rng);
+    Table table(deck);
+    auto moves = generate_moves(table);
+    REQUIRE(moves.size() == 4);
+    REQUIRE(table.header_to_string() ==
+            "Stock: ?  Waste:    Foundations:                 \n");
+    REQUIRE(table.tableau_to_string() ==
+            " Q♠    ?    ?    ?    ?    ?    ?  \n"
+            "      A♦    ?    ?    ?    ?    ?  \n"
+            "           A♠    ?    ?    ?    ?  \n"
+            "                Q♥    ?    ?    ?  \n"
+            "                     2♠    ?    ?  \n"
+            "                          3♦    ?  \n"
+            "                               9♠  \n");
+    REQUIRE(moves[0].to_string() == "SW");
+    REQUIRE(moves[1].to_string() == "TF 1");
+    REQUIRE(moves[2].to_string() == "TF 2");
+    REQUIRE(moves[3].to_string() == "TT 4 5 1");
+    stock_to_waste(table);
+    stock_to_waste(table);
+    stock_to_waste(table);
+    REQUIRE(table.header_to_string() ==
+            "Stock: ?  Waste: 8♦ Foundations:                 \n");
+    moves = generate_moves(table);
+    REQUIRE(moves.size() == 5);
+    REQUIRE(moves[0].to_string() == "SW");
+    REQUIRE(moves[1].to_string() == "WT 6");
+    REQUIRE(moves[2].to_string() == "TF 1");
+    REQUIRE(moves[3].to_string() == "TF 2");
+    REQUIRE(moves[4].to_string() == "TT 4 5 1");
 }
