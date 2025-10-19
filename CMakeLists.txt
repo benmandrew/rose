@@ -9,6 +9,21 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Provide a sensible default for single-config generators (Makefiles, Ninja).
+# Users can still override with -DCMAKE_BUILD_TYPE=Debug or Release on the
+# cmake command line. For multi-config generators (Xcode, Visual Studio) this
+# has no effect and the generator manages configurations itself.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    message(STATUS "No build type specified. Defaulting to Debug. To get a release build, run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release")
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
+endif()
+
+# Ensure debug symbols are present for Debug and RelWithDebInfo.
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # If user/configure requested ccache as the compiler launcher but ccache

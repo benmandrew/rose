@@ -45,7 +45,7 @@ struct Move {
 
 auto generate_moves(const Table& table) -> std::vector<Move>;
 
-auto apply_move(const Move& move, Table& table) -> Table&;
+auto apply_move(Table& table, const Move& move) -> Table&;
 
 auto stock_to_waste(Table& table) -> Table&;
 auto waste_to_foundation(Table& table) -> Table&;

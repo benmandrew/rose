@@ -91,6 +91,9 @@ auto generate_tableau_to_foundation_moves(const Table& table,
 auto generate_tableau_to_tableau_moves(const Table& table,
                                        std::vector<Move>& moves) -> void {
     for (size_t from_col = 0; from_col < c_tableau_columns; from_col++) {
+        if (table.m_tableau_visible_indices[from_col] == c_null_index) {
+            continue;
+        }
         auto [_, rank] = index_to_card(
             static_cast<size_t>(table.m_tableau_visible_indices[from_col]));
         if (rank == 0) {
@@ -126,7 +129,7 @@ auto generate_moves(const Table& table) -> std::vector<Move> {
     return moves;
 }
 
-auto apply_move(const Move& move, Table& table) -> Table& {
+auto apply_move(Table& table, const Move& move) -> Table& {
     switch (move.type) {
         case MoveType::StockToWaste:
             return stock_to_waste(table);
@@ -189,6 +192,9 @@ auto tableau_to_foundation(Table& table, size_t from_col) -> Table& {
         table.m_foundation_indices[static_cast<size_t>(suit)];
     table.m_tableau_visible_indices[from_col] =
         table.m_deck[static_cast<size_t>(tableau_top)];
+    if (table.m_tableau_visible_indices[from_col] == c_null_index) {
+        table.move_from_hidden_to_visible(from_col);
+    }
     table.m_deck[static_cast<size_t>(tableau_top)] =
         table.m_foundation_indices[foundation_top];
     table.m_foundation_indices[static_cast<size_t>(suit)] = tableau_top;
@@ -207,6 +213,9 @@ auto tableau_to_tableau(Table& table, size_t from_col, size_t to_col,
     }
     uint8_t new_from_top = table.m_deck[moving_bottom];
     table.m_tableau_visible_indices[from_col] = new_from_top;
+    if (table.m_tableau_visible_indices[from_col] == c_null_index) {
+        table.move_from_hidden_to_visible(from_col);
+    }
     table.m_deck[moving_bottom] = table.m_tableau_visible_indices[to_col];
     table.m_tableau_visible_indices[to_col] = moving_top;
     return table;
