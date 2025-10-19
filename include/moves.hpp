@@ -32,6 +32,7 @@ struct Move {
     };
 
     [[nodiscard]] auto to_string() const -> std::string;
+    [[nodiscard]] auto is_opposite(const Move& other) const -> bool;
 
     static auto create_stock_to_waste() -> Move;
     static auto create_waste_to_foundation() -> Move;
@@ -43,7 +44,9 @@ struct Move {
         -> Move;
 };
 
-auto generate_moves(const Table& table) -> std::vector<Move>;
+auto generate_moves(const Table& table,
+                    std::optional<Move> prev_move = std::nullopt)
+    -> std::vector<Move>;
 
 auto apply_move(Table& table, const Move& move) -> Table&;
 

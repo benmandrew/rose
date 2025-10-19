@@ -120,35 +120,58 @@ TEST_CASE("Table movement", "[table]") {
 }
 
 TEST_CASE("Generate moves", "[moves]") {
-    std::optional<std::mt19937> rng = std::make_optional<std::mt19937>(0);
-    auto deck = random_deck(rng);
-    Table table(deck);
-    auto moves = generate_moves(table);
-    REQUIRE(moves.size() == 4);
-    REQUIRE(table.header_to_string() ==
-            "Stock: ?  Waste:    Foundations:                 \n");
-    REQUIRE(table.tableau_to_string() ==
-            " Q♠    ?    ?    ?    ?    ?    ?  \n"
-            "      A♦    ?    ?    ?    ?    ?  \n"
-            "           A♠    ?    ?    ?    ?  \n"
-            "                Q♥    ?    ?    ?  \n"
-            "                     2♠    ?    ?  \n"
-            "                          3♦    ?  \n"
-            "                               9♠  \n");
-    REQUIRE(moves[0].to_string() == "SW");
-    REQUIRE(moves[1].to_string() == "TF 1");
-    REQUIRE(moves[2].to_string() == "TF 2");
-    REQUIRE(moves[3].to_string() == "TT 4 5 1");
-    stock_to_waste(table);
-    stock_to_waste(table);
-    stock_to_waste(table);
-    REQUIRE(table.header_to_string() ==
-            "Stock: ?  Waste: 8♦ Foundations:                 \n");
-    moves = generate_moves(table);
-    REQUIRE(moves.size() == 5);
-    REQUIRE(moves[0].to_string() == "SW");
-    REQUIRE(moves[1].to_string() == "WT 6");
-    REQUIRE(moves[2].to_string() == "TF 1");
-    REQUIRE(moves[3].to_string() == "TF 2");
-    REQUIRE(moves[4].to_string() == "TT 4 5 1");
+    SECTION("Basic moves") {
+        std::optional<std::mt19937> rng = std::make_optional<std::mt19937>(0);
+        auto deck = random_deck(rng);
+        Table table(deck);
+        auto moves = generate_moves(table);
+        REQUIRE(moves.size() == 4);
+        REQUIRE(table.header_to_string() ==
+                "Stock: ?  Waste:    Foundations:                 \n");
+        REQUIRE(table.tableau_to_string() ==
+                " Q♠    ?    ?    ?    ?    ?    ?  \n"
+                "      A♦    ?    ?    ?    ?    ?  \n"
+                "           A♠    ?    ?    ?    ?  \n"
+                "                Q♥    ?    ?    ?  \n"
+                "                     2♠    ?    ?  \n"
+                "                          3♦    ?  \n"
+                "                               9♠  \n");
+        REQUIRE(moves[0].to_string() == "SW");
+        REQUIRE(moves[1].to_string() == "TF 1");
+        REQUIRE(moves[2].to_string() == "TF 2");
+        REQUIRE(moves[3].to_string() == "TT 4 5 1");
+        stock_to_waste(table);
+        stock_to_waste(table);
+        stock_to_waste(table);
+        REQUIRE(table.header_to_string() ==
+                "Stock: ?  Waste: 8♦ Foundations:                 \n");
+        moves = generate_moves(table);
+        REQUIRE(moves.size() == 5);
+        REQUIRE(moves[0].to_string() == "SW");
+        REQUIRE(moves[1].to_string() == "WT 6");
+        REQUIRE(moves[2].to_string() == "TF 1");
+        REQUIRE(moves[3].to_string() == "TF 2");
+        REQUIRE(moves[4].to_string() == "TT 4 5 1");
+    }
+
+    SECTION("No repeat opposite moves") {
+        Table table;
+        table.m_tableau_visible_indices[0] = CARD("3♠");
+        table.m_deck[CARD("3♠")] = CARD("4♥");
+        table.m_foundation_indices[static_cast<size_t>(Suit::spades)] =
+            CARD("2♠");
+        auto moves = generate_moves(table, std::nullopt);
+        REQUIRE(moves.size() == 1);
+        REQUIRE(moves[0].to_string() == "TF 0");
+        tableau_to_foundation(table, 0);
+        moves = generate_moves(table, moves[0]);
+        REQUIRE(moves.size() == 0);
+    }
+
+    SECTION("Don't move kings between empty tableau columns") {
+        Table table;
+        table.m_tableau_visible_indices[0] = CARD("K♠");
+        auto moves = generate_moves(table, std::nullopt);
+        REQUIRE(moves.size() == 0);
+    }
 }

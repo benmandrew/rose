@@ -2,6 +2,12 @@
 
 #include <sys/types.h>
 
+#include <algorithm>
+#include <iterator>
+#include <optional>
+
+#include "common.hpp"
+
 auto Move::to_string() const -> std::string {
     switch (type) {
         case MoveType::StockToWaste:
@@ -18,6 +24,28 @@ auto Move::to_string() const -> std::string {
         case MoveType::FoundationToTableau:
             return "FT " + c_suit_strings[static_cast<size_t>(ft.from_suit)] +
                    " " + std::to_string(ft.to_col);
+        default:
+            throw std::invalid_argument("Invalid move type");
+    }
+}
+
+auto Move::is_opposite(const Move& other) const -> bool {
+    switch (type) {
+        case MoveType::StockToWaste:
+        case MoveType::WasteToFoundation:
+        case MoveType::WasteToTableau:
+            return false;
+        case MoveType::TableauToFoundation:
+            return other.type == MoveType::FoundationToTableau &&
+                   tf.from_col == other.ft.to_col;
+        case MoveType::TableauToTableau:
+            return other.type == MoveType::TableauToTableau &&
+                   tt.from_col == other.tt.to_col &&
+                   tt.to_col == other.tt.from_col &&
+                   tt.n_cards == other.tt.n_cards;
+        case MoveType::FoundationToTableau:
+            return other.type == MoveType::TableauToFoundation &&
+                   ft.to_col == other.tf.from_col;
         default:
             throw std::invalid_argument("Invalid move type");
     }
@@ -110,7 +138,11 @@ auto generate_tableau_to_tableau_moves(const Table& table,
                 if (to_col == from_col) {
                     continue;
                 }
-                if (table.can_be_placed_on_tableau(to_col, moving_card)) {
+                auto [_, moving_rank] =
+                    index_to_card(static_cast<size_t>(moving_card));
+                if (table.can_be_placed_on_tableau(to_col, moving_card) &&
+                    (moving_rank != c_num_cards_in_suit - 1 ||
+                     table.m_tableau_hidden_indices[to_col] != c_null_index)) {
                     moves.push_back(Move::create_tableau_to_tableau(
                         from_col, to_col, n_cards));
                 }
@@ -119,14 +151,28 @@ auto generate_tableau_to_tableau_moves(const Table& table,
     }
 }
 
-auto generate_moves(const Table& table) -> std::vector<Move> {
+auto filter_moves(std::vector<Move>& moves, std::vector<Move>& filtered_moves,
+                  const Move& prev_move) -> void {
+    filtered_moves.reserve(8);
+    std::ranges::copy_if(
+        moves.begin(), moves.end(), std::back_inserter(filtered_moves),
+        [prev_move](Move& m) -> bool { return !prev_move.is_opposite(m); });
+}
+
+auto generate_moves(const Table& table, std::optional<Move> prev_move)
+    -> std::vector<Move> {
     std::vector<Move> moves;
     moves.reserve(8);
     generate_basic_moves(table, moves);
     generate_waste_to_tableau_moves(table, moves);
     generate_tableau_to_foundation_moves(table, moves);
     generate_tableau_to_tableau_moves(table, moves);
-    return moves;
+    if (!prev_move) {
+        return moves;
+    }
+    std::vector<Move> filtered_moves;
+    filter_moves(moves, filtered_moves, *prev_move);
+    return filtered_moves;
 }
 
 auto apply_move(Table& table, const Move& move) -> Table& {
