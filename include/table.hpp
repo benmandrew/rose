@@ -49,7 +49,25 @@ class [[gnu::packed]] Table {
                                                 uint8_t card_index) const
         -> bool;
 
+    [[nodiscard]] auto hash() const -> std::size_t;
+
+    [[nodiscard]] auto operator==(Table const& other) const -> bool {
+        return m_stock_index == other.m_stock_index &&
+               m_waste_index == other.m_waste_index &&
+               m_foundation_indices == other.m_foundation_indices &&
+               m_tableau_visible_indices == other.m_tableau_visible_indices &&
+               m_tableau_hidden_indices == other.m_tableau_hidden_indices &&
+               m_deck == other.m_deck;
+    }
+
    private:
     [[nodiscard]] auto tableau_to_2d() const
         -> std::vector<std::vector<uint8_t>>;
+};
+
+template <>
+struct std::hash<Table> {
+    auto operator()(Table const& t) const noexcept -> std::size_t {
+        return t.hash();
+    }
 };

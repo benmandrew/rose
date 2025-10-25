@@ -12,22 +12,22 @@ enum class MoveType : uint8_t {
 };
 
 struct Move {
-    MoveType type;
+    MoveType m_type;
     union {
         struct {
-            size_t to_col;
+            size_t m_to_col;
         } wt;
         struct {
-            size_t from_col;
+            size_t m_from_col;
         } tf;
         struct {
-            size_t from_col;
-            size_t to_col;
-            size_t n_cards;
+            size_t m_from_col;
+            size_t m_to_col;
+            size_t m_n_cards;
         } tt;
         struct {
-            Suit from_suit;
-            size_t to_col;
+            Suit m_from_suit;
+            size_t m_to_col;
         } ft;
     };
 

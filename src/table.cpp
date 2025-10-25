@@ -218,3 +218,28 @@ auto Table::can_be_placed_on_tableau(size_t to_col, uint8_t card_index) const
     return (card_rank + 1 == tableau_rank) &&
            (!suit_colours_equal(card_suit, tableau_suit));
 }
+
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+auto Table::hash() const -> std::size_t {
+    std::size_t seed = 0;
+    for (uint8_t index : m_foundation_indices) {
+        hash_combine(seed, index);
+    }
+    for (uint8_t index : m_tableau_visible_indices) {
+        hash_combine(seed, index);
+    }
+    for (uint8_t index : m_tableau_hidden_indices) {
+        hash_combine(seed, index);
+    }
+    hash_combine(seed, m_stock_index);
+    hash_combine(seed, m_waste_index);
+    for (uint8_t index : m_deck) {
+        hash_combine(seed, index);
+    }
+    return seed;
+}

@@ -56,9 +56,14 @@ if(APPLE)
     endif()
 endif()
 
+file(GLOB ROSE_LIB_SRC CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+list(REMOVE_ITEM ROSE_LIB_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+)
 add_library(rose_lib STATIC
-    src/table.cpp
-    src/moves.cpp
+    ${ROSE_LIB_SRC}
 )
 target_include_directories(rose_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

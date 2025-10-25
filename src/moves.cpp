@@ -9,43 +9,44 @@
 #include "common.hpp"
 
 auto Move::to_string() const -> std::string {
-    switch (type) {
+    switch (m_type) {
         case MoveType::StockToWaste:
             return "SW";
         case MoveType::WasteToFoundation:
             return "WF";
         case MoveType::WasteToTableau:
-            return "WT " + std::to_string(wt.to_col);
+            return "WT " + std::to_string(wt.m_to_col);
         case MoveType::TableauToFoundation:
-            return "TF " + std::to_string(tf.from_col);
+            return "TF " + std::to_string(tf.m_from_col);
         case MoveType::TableauToTableau:
-            return "TT " + std::to_string(tt.from_col) + " " +
-                   std::to_string(tt.to_col) + " " + std::to_string(tt.n_cards);
+            return "TT " + std::to_string(tt.m_from_col) + " " +
+                   std::to_string(tt.m_to_col) + " " +
+                   std::to_string(tt.m_n_cards);
         case MoveType::FoundationToTableau:
-            return "FT " + c_suit_strings[static_cast<size_t>(ft.from_suit)] +
-                   " " + std::to_string(ft.to_col);
+            return "FT " + c_suit_strings[static_cast<size_t>(ft.m_from_suit)] +
+                   " " + std::to_string(ft.m_to_col);
         default:
             throw std::invalid_argument("Invalid move type");
     }
 }
 
 auto Move::is_opposite(const Move& other) const -> bool {
-    switch (type) {
+    switch (m_type) {
         case MoveType::StockToWaste:
         case MoveType::WasteToFoundation:
         case MoveType::WasteToTableau:
             return false;
         case MoveType::TableauToFoundation:
-            return other.type == MoveType::FoundationToTableau &&
-                   tf.from_col == other.ft.to_col;
+            return other.m_type == MoveType::FoundationToTableau &&
+                   tf.m_from_col == other.ft.m_to_col;
         case MoveType::TableauToTableau:
-            return other.type == MoveType::TableauToTableau &&
-                   tt.from_col == other.tt.to_col &&
-                   tt.to_col == other.tt.from_col &&
-                   tt.n_cards == other.tt.n_cards;
+            return other.m_type == MoveType::TableauToTableau &&
+                   tt.m_from_col == other.tt.m_to_col &&
+                   tt.m_to_col == other.tt.m_from_col &&
+                   tt.m_n_cards == other.tt.m_n_cards;
         case MoveType::FoundationToTableau:
-            return other.type == MoveType::TableauToFoundation &&
-                   ft.to_col == other.tf.from_col;
+            return other.m_type == MoveType::TableauToFoundation &&
+                   ft.m_to_col == other.tf.m_from_col;
         default:
             throw std::invalid_argument("Invalid move type");
     }
@@ -69,14 +70,15 @@ auto Move::create_tableau_to_foundation(size_t from_col) -> Move {
 
 auto Move::create_tableau_to_tableau(size_t from_col, size_t to_col,
                                      size_t n_cards) -> Move {
-    return Move{
-        MoveType::TableauToTableau,
-        {.tt = {.from_col = from_col, .to_col = to_col, .n_cards = n_cards}}};
+    return Move{MoveType::TableauToTableau,
+                {.tt = {.m_from_col = from_col,
+                        .m_to_col = to_col,
+                        .m_n_cards = n_cards}}};
 }
 
 auto Move::create_foundation_to_tableau(Suit from_suit, size_t to_col) -> Move {
     return Move{MoveType::FoundationToTableau,
-                {.ft = {.from_suit = from_suit, .to_col = to_col}}};
+                {.ft = {.m_from_suit = from_suit, .m_to_col = to_col}}};
 }
 
 auto generate_basic_moves(const Table& table, std::vector<Move>& moves)
@@ -177,21 +179,21 @@ auto generate_moves(const Table& table, std::optional<Move> prev_move)
 }
 
 auto apply_move(Table& table, const Move& move) -> Table& {
-    switch (move.type) {
+    switch (move.m_type) {
         case MoveType::StockToWaste:
             return stock_to_waste(table);
         case MoveType::WasteToFoundation:
             return waste_to_foundation(table);
         case MoveType::WasteToTableau:
-            return waste_to_tableau(table, move.wt.to_col);
+            return waste_to_tableau(table, move.wt.m_to_col);
         case MoveType::TableauToFoundation:
-            return tableau_to_foundation(table, move.tf.from_col);
+            return tableau_to_foundation(table, move.tf.m_from_col);
         case MoveType::TableauToTableau:
-            return tableau_to_tableau(table, move.tt.from_col, move.tt.to_col,
-                                      move.tt.n_cards);
+            return tableau_to_tableau(table, move.tt.m_from_col,
+                                      move.tt.m_to_col, move.tt.m_n_cards);
         case MoveType::FoundationToTableau:
-            return foundation_to_tableau(table, move.ft.from_suit,
-                                         move.ft.to_col);
+            return foundation_to_tableau(table, move.ft.m_from_suit,
+                                         move.ft.m_to_col);
         default:
             throw std::invalid_argument("Invalid move type");
     }
