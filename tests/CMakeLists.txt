@@ -18,12 +18,28 @@ add_executable(unittests
 target_link_libraries(unittests PRIVATE Catch2::Catch2WithMain rose_lib)
 target_include_directories(unittests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
+set(TEST_RES_DIR "${CMAKE_CURRENT_BINARY_DIR}/res")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/res_config.hpp.in
+               ${CMAKE_CURRENT_BINARY_DIR}/res_config.hpp @ONLY)
+target_include_directories(unittests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/res)
+    message(FATAL_ERROR "No tests/res/ directory found in source tree")
+endif()
+
+add_custom_target(copy_test_resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/res ${CMAKE_CURRENT_BINARY_DIR}/res
+    COMMENT "Copying test resources to ${CMAKE_CURRENT_BINARY_DIR}/res"
+)
+add_dependencies(unittests copy_test_resources)
+
 include(Catch)
 
 catch_discover_tests(unittests)
 
 add_custom_target(tests
     DEPENDS unittests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --progress
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )

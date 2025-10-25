@@ -1,0 +1,8 @@
+#pragma once
+#include <string>
+#include <filesystem>
+
+// Path to test resources directory (generated at configure time).
+inline constexpr std::string_view TEST_RES_DIR = "@TEST_RES_DIR@";
+
+inline std::filesystem::path res_dir = std::string(TEST_RES_DIR);

@@ -62,19 +62,6 @@ auto Table::max_cards_in_tableau_column() const -> size_t {
     return max_cards;
 }
 
-auto card_to_string(uint8_t card_index) -> std::string {
-    if (card_index == c_hidden_index) {
-        return c_hidden_card_string;
-    }
-    if (card_index == c_null_index) {
-        return c_no_card_string;
-    }
-    assert(card_index >= 0 && card_index < static_cast<uint8_t>(c_num_cards));
-    auto [suit, rank] = index_to_card(static_cast<size_t>(card_index));
-    return c_rank_strings[static_cast<size_t>(rank)] +
-           c_suit_strings[static_cast<size_t>(suit)];
-}
-
 auto Table::tableau_to_2d() const -> std::vector<std::vector<uint8_t>> {
     size_t max_column_depth = max_cards_in_tableau_column();
     std::vector<std::vector<uint8_t>> table(

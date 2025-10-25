@@ -151,12 +151,13 @@ auto generate_tableau_to_tableau_moves(const Table& table,
     }
 }
 
-auto filter_moves(std::vector<Move>& moves, std::vector<Move>& filtered_moves,
-                  const Move& prev_move) -> void {
+auto filter_opposite_moves(std::vector<Move>& moves,
+                           std::vector<Move>& filtered_moves,
+                           const Move& prev_move) -> void {
     filtered_moves.reserve(8);
     std::ranges::copy_if(
         moves.begin(), moves.end(), std::back_inserter(filtered_moves),
-        [prev_move](Move& m) -> bool { return !prev_move.is_opposite(m); });
+        [&prev_move](Move& m) -> bool { return !prev_move.is_opposite(m); });
 }
 
 auto generate_moves(const Table& table, std::optional<Move> prev_move)
@@ -171,7 +172,7 @@ auto generate_moves(const Table& table, std::optional<Move> prev_move)
         return moves;
     }
     std::vector<Move> filtered_moves;
-    filter_moves(moves, filtered_moves, *prev_move);
+    filter_opposite_moves(moves, filtered_moves, *prev_move);
     return filtered_moves;
 }
 

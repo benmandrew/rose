@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
-#include <iostream>
 
 #include "common.hpp"
 #include "moves.hpp"
+#include "res_config.hpp"
 #include "table.hpp"
 
 TEST_CASE("Stock-waste cycling", "[moves]") {
@@ -121,8 +121,7 @@ TEST_CASE("Table movement", "[table]") {
 
 TEST_CASE("Generate moves", "[moves]") {
     SECTION("Basic moves") {
-        std::optional<std::mt19937> rng = std::make_optional<std::mt19937>(0);
-        auto deck = random_deck(rng);
+        auto deck = import_deck(res_dir / "random-deck.txt");
         Table table(deck);
         auto moves = generate_moves(table);
         REQUIRE(moves.size() == 4);

@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "common.hpp"
+#include "res_config.hpp"
 #include "table.hpp"
 
 TEST_CASE("Table default construction", "[table]") {
@@ -36,8 +37,7 @@ TEST_CASE("Tableau", "[table]") {
                 "                K♣                 \n");
     }
     SECTION("Seeded random state") {
-        std::optional<std::mt19937> rng = std::make_optional<std::mt19937>(0);
-        auto deck = random_deck(rng);
+        auto deck = import_deck(res_dir / "random-deck.txt");
         table = Table(deck);
         REQUIRE(table.tableau_to_string() ==
                 " Q♠    ?    ?    ?    ?    ?    ?  \n"
