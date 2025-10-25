@@ -1,10 +1,9 @@
 #include "graph.hpp"
 
-#include <iostream>
 #include <memory>
-#include <queue>
 
 #include "moves.hpp"
+#include "table.hpp"
 
 class Edge;
 
@@ -37,23 +36,32 @@ Graph::Graph(const Table& initial_table)
     m_seen_tables.insert(initial_table);
 }
 
-auto Graph::generate_all_tables() -> void {
-    std::queue<std::shared_ptr<Table>> table_queue;
-    table_queue.push(m_root);
-    size_t table_counter = 1;
-    while (!table_queue.empty()) {
-        auto current_table = table_queue.front();
-        std::cout << "[Table " << table_counter++ << "]\n"
-                  << current_table->to_string();
-        table_queue.pop();
-        auto possible_moves = generate_moves(*current_table);
-        for (const auto& move : possible_moves) {
-            std::cout << "  Move: " << move.to_string() << "\n";
-            Table new_table = apply_move(*current_table, move);
-            if (!m_seen_tables.contains(new_table)) {
-                m_seen_tables.insert(new_table);
-                table_queue.push(std::make_shared<Table>(new_table));
-            }
+auto Graph::generate_next_tables(TableQueue& table_queue, const Table& table,
+                                 size_t current_depth) -> TableQueue& {
+    auto possible_moves = generate_moves(table);
+    for (const auto& move : possible_moves) {
+        Table new_table = table;
+        new_table = apply_move(new_table, move);
+        if (!m_seen_tables.contains(new_table)) {
+            m_seen_tables.insert(new_table);
+            table_queue.emplace(current_depth + 1,
+                                std::make_shared<Table>(new_table));
         }
+    }
+    return table_queue;
+}
+
+auto Graph::generate(size_t depth) -> void {
+    TableQueue table_queue;
+    size_t current_depth = 0;
+    table_queue.emplace(current_depth, m_root);
+    while (!table_queue.empty()) {
+        auto [current_depth, current_table] = table_queue.front();
+        table_queue.pop();
+        if (current_depth >= depth) {
+            break;
+        }
+        table_queue =
+            generate_next_tables(table_queue, *current_table, current_depth);
     }
 }
