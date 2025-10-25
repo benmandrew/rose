@@ -10,8 +10,7 @@ class Graph {
     std::unordered_set<Table> m_seen_tables;
     std::shared_ptr<Table> m_root;
 
-    auto generate_all_tables() -> void;
-
    public:
     Graph(const Table& initial_table);
+    auto generate_all_tables() -> void;
 };

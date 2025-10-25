@@ -1,5 +1,6 @@
 #include "graph.hpp"
 
+#include <iostream>
 #include <memory>
 #include <queue>
 
@@ -39,11 +40,15 @@ Graph::Graph(const Table& initial_table)
 auto Graph::generate_all_tables() -> void {
     std::queue<std::shared_ptr<Table>> table_queue;
     table_queue.push(m_root);
+    size_t table_counter = 1;
     while (!table_queue.empty()) {
         auto current_table = table_queue.front();
+        std::cout << "[Table " << table_counter++ << "]\n"
+                  << current_table->to_string();
         table_queue.pop();
         auto possible_moves = generate_moves(*current_table);
         for (const auto& move : possible_moves) {
+            std::cout << "  Move: " << move.to_string() << "\n";
             Table new_table = apply_move(*current_table, move);
             if (!m_seen_tables.contains(new_table)) {
                 m_seen_tables.insert(new_table);

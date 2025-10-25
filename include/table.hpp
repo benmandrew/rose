@@ -31,6 +31,7 @@ class [[gnu::packed]] Table {
     [[nodiscard]] auto n_cards_in_tableau_column(size_t col_idx) const
         -> size_t;
     [[nodiscard]] auto max_cards_in_tableau_column() const -> size_t;
+    [[nodiscard]] auto to_string() const -> std::string;
     [[nodiscard]] auto tableau_to_string() const -> std::string;
     [[nodiscard]] auto header_to_string() const -> std::string;
 

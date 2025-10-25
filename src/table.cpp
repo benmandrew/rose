@@ -88,6 +88,10 @@ auto Table::tableau_to_2d() const -> std::vector<std::vector<uint8_t>> {
     return table;
 }
 
+auto Table::to_string() const -> std::string {
+    return header_to_string() + tableau_to_string();
+}
+
 auto Table::tableau_to_string() const -> std::string {
     auto table = tableau_to_2d();
     std::string result;

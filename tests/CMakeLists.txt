@@ -10,11 +10,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(catch2)
 
-add_executable(unittests
-    test_common.cpp
-    test_table.cpp
-    test_moves.cpp
+
+file(GLOB TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_*.cpp
 )
+
+add_executable(unittests ${TEST_SOURCES})
+
 target_link_libraries(unittests PRIVATE Catch2::Catch2WithMain rose_lib)
 target_include_directories(unittests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
