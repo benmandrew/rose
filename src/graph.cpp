@@ -1,28 +1,6 @@
 #include "graph.hpp"
 
-#include <memory>
-
-#include "moves.hpp"
 #include "table.hpp"
-
-class Edge;
-
-class Node {
-   public:
-    std::shared_ptr<Table> table;
-    std::vector<Edge> edges;
-
-    Node(const Table& table);
-};
-
-class Edge {
-   public:
-    Move move;
-    std::shared_ptr<Node> from;
-    std::shared_ptr<Node> to;
-
-    Edge(const Move& move, const Table& from, const Table& to);
-};
 
 Node::Node(const Table& table) : table(std::make_shared<Table>(table)) {}
 
@@ -31,37 +9,39 @@ Edge::Edge(const Move& move, const Table& from, const Table& to)
       from(std::make_shared<Node>(from)),
       to(std::make_shared<Node>(to)) {}
 
-Graph::Graph(const Table& initial_table)
-    : m_root(std::make_shared<Table>(initial_table)) {
+Graph::Graph(const Table& initial_table) : m_root(initial_table) {
     m_seen_tables.insert(initial_table);
 }
 
-auto Graph::generate_next_tables(TableQueue& table_queue, const Table& table,
-                                 size_t current_depth) -> TableQueue& {
-    auto possible_moves = generate_moves(table);
+auto Graph::generate_next_tables(DepthNodeQueue& node_queue, Node& node,
+                                 size_t current_depth) -> DepthNodeQueue& {
+    auto possible_moves = generate_moves(*node.table);
     for (const auto& move : possible_moves) {
-        Table new_table = table;
+        Table new_table = *node.table;
         new_table = apply_move(new_table, move);
         if (!m_seen_tables.contains(new_table)) {
             m_seen_tables.insert(new_table);
-            table_queue.emplace(current_depth + 1,
-                                std::make_shared<Table>(new_table));
+            Node new_node(new_table);
+            Edge new_edge(move, *node.table, new_table);
+            node.edges.push_back(new_edge);
+            node_queue.emplace(current_depth + 1,
+                               std::make_shared<Node>(new_node));
         }
     }
-    return table_queue;
+    return node_queue;
 }
 
 auto Graph::generate(size_t depth) -> void {
-    TableQueue table_queue;
+    DepthNodeQueue node_queue;
     size_t current_depth = 0;
-    table_queue.emplace(current_depth, m_root);
-    while (!table_queue.empty()) {
-        auto [current_depth, current_table] = table_queue.front();
-        table_queue.pop();
+    node_queue.emplace(current_depth, std::make_shared<Node>(m_root));
+    while (!node_queue.empty()) {
+        auto [current_depth, current_node] = node_queue.front();
+        node_queue.pop();
         if (current_depth >= depth) {
             break;
         }
-        table_queue =
-            generate_next_tables(table_queue, *current_table, current_depth);
+        node_queue =
+            generate_next_tables(node_queue, *current_node, current_depth);
     }
 }
