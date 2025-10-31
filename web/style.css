@@ -1,0 +1,24 @@
+html,body {
+    height:100%; margin:0; font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif
+}
+#app {
+    display:flex; height:100vh;
+}
+#graph {
+    flex:1;
+}
+#sidebar {
+    width:320px;
+    border-left:1px solid #ddd;
+    padding:12px;
+    box-sizing:border-box;
+}
+h1 {
+    font-size:1.1rem;
+    margin:0 0 8px 0
+}
+pre {
+    background:#f8f8f8;
+    padding:8px;
+    overflow:auto
+}
