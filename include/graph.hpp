@@ -14,19 +14,20 @@ class Edge;
 
 class Node {
    public:
-    std::shared_ptr<Table> table;
-    std::vector<Edge> edges;
+    Table m_table;
+    std::vector<Edge> m_edges;
 
     Node(const Table& table);
 };
 
 class Edge {
    public:
-    Move move;
-    std::shared_ptr<Node> from;
-    std::shared_ptr<Node> to;
+    Move m_move;
+    std::shared_ptr<Node> m_from;
+    std::shared_ptr<Node> m_to;
 
-    Edge(const Move& move, const Table& from, const Table& to);
+    Edge(const Move& move, const std::shared_ptr<Node>& from,
+         const std::shared_ptr<Node>& to);
 };
 
 using DepthNodeQueue = std::queue<std::pair<size_t, std::shared_ptr<Node>>>;
@@ -37,110 +38,54 @@ class Graph {
     std::unordered_set<Table> m_seen_tables;
     Node m_root;
 
-    auto generate_next_tables(DepthNodeQueue& node_queue, Node& node,
+    auto generate_next_tables(DepthNodeQueue& node_queue,
+                              const std::shared_ptr<Node>& node,
                               size_t current_depth) -> DepthNodeQueue&;
 
    public:
     Graph(const Table& initial_table);
+    [[nodiscard]] auto get_root() const -> Node { return m_root; }
     auto generate(size_t depth = SIZE_MAX) -> void;
 
     struct Iterator {
         Iterator(std::shared_ptr<Graph> graph_ptr,
-                 std::unique_ptr<NodeQueue> node_queue_ptr)
-            : m_graph_ptr(std::move(graph_ptr)),
-              m_node_queue(std::move(node_queue_ptr)) {}
-
-        Iterator(const Iterator& other)
-            : m_graph_ptr(other.m_graph_ptr),
-              m_node_queue(std::make_unique<NodeQueue>(*other.m_node_queue)) {}
-
-        Iterator(Iterator&& other) noexcept
-            : m_graph_ptr(std::move(other.m_graph_ptr)),
-              m_node_queue(std::move(other.m_node_queue)) {}
-
-        auto operator=(const Iterator& other) -> Iterator& {
-            if (this == &other) {
-                return *this;
-            }
-            m_graph_ptr = other.m_graph_ptr;
-            if (other.m_node_queue) {
-                m_node_queue = std::make_unique<NodeQueue>(*other.m_node_queue);
-            } else {
-                m_node_queue.reset();
-            }
-            return *this;
-        }
-        auto operator=(Iterator&& other) noexcept -> Iterator& = default;
-
+                 std::unique_ptr<NodeQueue> node_queue_ptr);
+        Iterator(const Iterator& other);
+        Iterator(Iterator&& other) noexcept;
         Iterator() = default;
 
-        auto operator++() -> Iterator& {
-            if (m_node_queue->empty()) {
-                throw std::out_of_range(
-                    "Iterator cannot be incremented past end");
-            }
-            m_node_queue->pop();
-            return *this;
-        }
-
-        auto operator++(int) -> Iterator {
-            Iterator tmp = *this;
-            if (m_node_queue->empty()) {
-                throw std::out_of_range(
-                    "Iterator cannot be incremented past end");
-            }
-            m_node_queue->pop();
-            return tmp;
-        }
-
-        auto operator==(const Iterator& other) const -> bool {
-            if (m_node_queue == other.m_node_queue) {
-                return true;
-            }
-            if (!m_node_queue || !other.m_node_queue) {
-                return false;
-            }
-            if (m_node_queue->empty() && other.m_node_queue->empty()) {
-                return true;
-            }
-            return m_node_queue->front() == other.m_node_queue->front();
-        }
-
-        auto operator!=(const Iterator& other) const -> bool {
-            return !(*this == other);
-        }
+        auto operator=(const Iterator& other) -> Iterator&;
+        auto operator=(Iterator&& other) noexcept -> Iterator&;
 
         using iterator_concept = std::forward_iterator_tag;
         using iterator_category = std::forward_iterator_tag;
         using value_type = std::shared_ptr<Node>;
         using difference_type = std::ptrdiff_t;
-        using reference = value_type&;
-        using pointer = value_type*;
+        using reference = const value_type&;
+        using pointer = const value_type*;
 
-        auto operator*() const -> const value_type& {
-            if (!m_node_queue || m_node_queue->empty()) {
-                throw std::out_of_range(
-                    "Iterator cannot be dereferenced at end");
-            }
-            return m_node_queue->front();
-        }
-
-        auto operator->() const -> const value_type* {
-            if (!m_node_queue || m_node_queue->empty()) {
-                throw std::out_of_range(
-                    "Iterator cannot be dereferenced at end");
-            }
-            return std::addressof(m_node_queue->front());
-        }
+        auto operator++() -> Iterator&;
+        auto operator++(int) -> Iterator;
+        auto operator==(const Iterator& other) const -> bool;
+        auto operator!=(const Iterator& other) const -> bool;
+        auto operator*() -> reference;
+        auto operator*() const -> const value_type&;
+        auto operator->() -> pointer;
+        auto operator->() const -> const value_type*;
 
        private:
         std::shared_ptr<Graph> m_graph_ptr;
         std::unique_ptr<NodeQueue> m_node_queue;
     };
 
-    static_assert(std::forward_iterator<Graph::Iterator>);
     auto begin() -> Iterator {
-        return {std::make_shared<Graph>(*this), std::make_unique<NodeQueue>()};
+        auto graph_copy = std::make_shared<Graph>(*this);
+        auto node_queue = std::make_unique<NodeQueue>();
+        std::shared_ptr<Node> root_ptr(&graph_copy->m_root,
+                                       [](Node*) -> void {});
+        node_queue->emplace(root_ptr);
+        return {graph_copy, std::move(node_queue)};
     }
-    static auto end() -> Iterator { return {nullptr, nullptr}; }
+
+    auto end() -> Iterator { return {std::make_shared<Graph>(*this), nullptr}; }
 };
