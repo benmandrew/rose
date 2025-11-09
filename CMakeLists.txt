@@ -69,7 +69,7 @@ add_library(rose_lib STATIC
 target_include_directories(rose_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-target_link_libraries(rose_lib PUBLIC fmt::fmt)
+target_link_libraries(rose_lib PUBLIC fmt::fmt nlohmann_json::nlohmann_json)
 
 find_package(fmt CONFIG QUIET)
 if (NOT TARGET fmt::fmt)
@@ -77,10 +77,20 @@ if (NOT TARGET fmt::fmt)
     message(STATUS "fmt not found via find_package; fetching fmt via FetchContent")
     FetchContent_Declare(
         fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 10.1.1
-    )
+        URL https://github.com/fmtlib/fmt/releases/download/12.1.0/fmt-12.1.0.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP NEW)
     FetchContent_MakeAvailable(fmt)
+endif()
+
+find_package(json CONFIG QUIET)
+if (NOT TARGET nlohmann_json::nlohmann_json)
+    include(FetchContent)
+    message(STATUS "nlohmann_json not found via find_package; fetching nlohmann_json via FetchContent")
+    FetchContent_Declare(
+        json
+        URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+        DOWNLOAD_EXTRACT_TIMESTAMP NEW)
+    FetchContent_MakeAvailable(json)
 endif()
 
 add_executable(rose src/main.cpp)

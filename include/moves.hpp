@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "table.hpp"
 
 enum class MoveType : uint8_t {
@@ -10,6 +12,8 @@ enum class MoveType : uint8_t {
     TableauToTableau,
     FoundationToTableau,
 };
+
+[[nodiscard]] auto move_type_to_string(MoveType move_type) -> std::string;
 
 struct Move {
     MoveType m_type;
@@ -32,6 +36,7 @@ struct Move {
     };
 
     [[nodiscard]] auto to_string() const -> std::string;
+    [[nodiscard]] auto to_json() const -> nlohmann::json;
     [[nodiscard]] auto is_opposite(const Move& other) const -> bool;
 
     static auto create_stock_to_waste() -> Move;

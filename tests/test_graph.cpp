@@ -3,9 +3,15 @@
 #include "graph.hpp"
 #include "res_config.hpp"
 
-// TEST_CASE("Graph generation", "[graph]") {
-//     auto deck = import_deck(res_dir / "random-deck.txt");
-//     Table table(deck);
-//     Graph graph(table);
-//     graph.generate_all_tables();
-// }
+TEST_CASE("Graph iterator", "[graph]") {
+    auto deck = import_deck(res_dir / "random-deck.txt");
+    Table table(deck);
+    Graph graph(table);
+    graph.generate(2);
+    size_t count = 0;
+    for (auto node : graph) {
+        REQUIRE(node != nullptr);
+        count++;
+    }
+    REQUIRE(count == 16);
+}
