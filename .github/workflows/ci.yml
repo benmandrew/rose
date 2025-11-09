@@ -5,6 +5,7 @@ on:
 
 jobs:
   build:
+    name: C++ Build and Test
     runs-on: ubuntu-latest
 
     steps:
@@ -50,3 +51,35 @@ jobs:
     - name: Run tests
       run: |
         ctest --test-dir build --output-on-failure
+
+  web:
+    name: Web Lint and Format Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Cache npm
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-${{ github.repository }}-node-${{ hashFiles('web/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ github.repository }}-node-
+
+    - name: Install web dependencies
+      run: npm ci
+      working-directory: web
+
+    - name: Biome run lint
+      run: npx biome lint
+      working-directory: web
+
+    - name: Biome check formatting
+      run: npx biome format
+      working-directory: web
