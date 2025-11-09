@@ -16,8 +16,9 @@ class Node {
    public:
     Table m_table;
     std::vector<Edge> m_edges;
+    size_t m_depth;
 
-    Node(const Table& table);
+    Node(const Table& table, size_t depth);
 };
 
 class Edge {
@@ -89,17 +90,12 @@ class Graph {
     }
 
     [[nodiscard]] auto begin() const -> Iterator {
-        auto graph_copy = std::make_shared<Graph>(*this);
-        auto node_queue = std::make_unique<NodeQueue>();
-        std::shared_ptr<Node> root_ptr(&graph_copy->m_root,
-                                       [](Node*) -> void {});
-        node_queue->emplace(root_ptr);
-        return {graph_copy, std::move(node_queue)};
+        return const_cast<Graph*>(this)->begin();
     }
 
     auto end() -> Iterator { return {std::make_shared<Graph>(*this), nullptr}; }
 
     [[nodiscard]] auto end() const -> Iterator {
-        return {std::make_shared<Graph>(*this), nullptr};
+        return const_cast<Graph*>(this)->end();
     }
 };

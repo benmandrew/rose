@@ -1,13 +1,15 @@
 # Sigma.js viewer
 
-This small viewer renders a graph from `web/graph.json` using Sigma.js (v1) and is intended as a lightweight front-end for graphs produced by the C++ part of this project.
-
-Files
-- `index.html` — the viewer (loads `graph.json` via fetch).
-- `graph.json` — example graph in the simple Sigma JSON format: { nodes: [...], edges: [...] }.
+This small viewer renders a graph from `web/graph.json` using Sigma.js and is intended as a lightweight front-end for graphs produced by the C++ part of this project.
 
 Usage
-1. Start a simple HTTP server in the project root so the browser can fetch `graph.json`:
+1. Run bundler
+
+```bash
+nom run build
+```
+
+2. Start a simple HTTP server in the project root so the browser can fetch `graph.json`:
 
 ```bash
 # from the repo root
@@ -16,7 +18,7 @@ python3 -m http.server 8000
 npx http-server . -p 8000
 ```
 
-2. Open http://localhost:8000/web/index.html in your browser.
+3. Open http://localhost:8000/web/index.html in your browser.
 
 Graph JSON format
 - nodes: array of { id: string, label?: string, x: number, y: number, size?: number }

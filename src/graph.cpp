@@ -6,13 +6,13 @@
 
 #include "table.hpp"
 
-Node::Node(const Table& table) : m_table(table) {}
+Node::Node(const Table& table, size_t depth) : m_table(table), m_depth(depth) {}
 
 Edge::Edge(const Move& move, const std::shared_ptr<Node>& from,
            const std::shared_ptr<Node>& to)
     : m_move(move), m_from(from), m_to(to) {}
 
-Graph::Graph(const Table& initial_table) : m_root(initial_table) {}
+Graph::Graph(const Table& initial_table) : m_root(initial_table, 0) {}
 
 auto Graph::generate_next_tables(DepthNodeQueue& node_queue,
                                  const std::shared_ptr<Node>& node,
@@ -25,7 +25,7 @@ auto Graph::generate_next_tables(DepthNodeQueue& node_queue,
             continue;
         }
         m_seen_tables.insert(new_table);
-        auto new_node = std::make_shared<Node>(new_table);
+        auto new_node = std::make_shared<Node>(new_table, current_depth + 1);
         node->m_edges.emplace_back(move, node, new_node);
         node_queue.emplace(current_depth + 1, new_node);
     }

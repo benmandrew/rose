@@ -45,10 +45,11 @@ function resetRenderer(renderer) {
 
 function setNodeCoordinates(g, fa2Iterations) {
   circular.assign(g);
+  const settings = ForceAtlas2.inferSettings(g);
   if (ForceAtlas2 && typeof ForceAtlas2.assign === "function") {
-    ForceAtlas2.assign(g, { iterations: fa2Iterations });
+    ForceAtlas2.assign(g, { iterations: fa2Iterations, settings: settings });
   } else if (typeof ForceAtlas2 === "function") {
-    ForceAtlas2(g, { iterations: fa2Iterations });
+    ForceAtlas2(g, { iterations: fa2Iterations, settings: settings });
   } else {
     console.warn("ForceAtlas2 layout not available");
   }
