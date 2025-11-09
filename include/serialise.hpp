@@ -2,4 +2,6 @@
 
 #include "graph.hpp"
 
-auto graph_to_json(const Graph& graph, std::ostream& os) -> void {}
+auto graph_to_json(const Graph& graph) -> nlohmann::json;
+
+auto graph_to_string(const Graph& graph) -> std::string;

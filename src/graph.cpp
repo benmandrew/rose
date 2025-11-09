@@ -1,6 +1,5 @@
 #include "graph.hpp"
 
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -144,6 +143,10 @@ auto Graph::Iterator::operator->() -> pointer {
 
 auto Graph::Iterator::operator->() const -> const value_type* {
     return const_cast<Graph::Iterator*>(this)->operator->();
+}
+
+auto Graph::Iterator::owner() const -> std::shared_ptr<Graph> {
+    return m_graph_ptr;
 }
 
 static_assert(std::forward_iterator<Graph::Iterator>);

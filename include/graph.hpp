@@ -72,6 +72,7 @@ class Graph {
         auto operator*() const -> const value_type&;
         auto operator->() -> pointer;
         auto operator->() const -> const value_type*;
+        [[nodiscard]] auto owner() const -> std::shared_ptr<Graph>;
 
        private:
         std::shared_ptr<Graph> m_graph_ptr;
@@ -87,5 +88,18 @@ class Graph {
         return {graph_copy, std::move(node_queue)};
     }
 
+    [[nodiscard]] auto begin() const -> Iterator {
+        auto graph_copy = std::make_shared<Graph>(*this);
+        auto node_queue = std::make_unique<NodeQueue>();
+        std::shared_ptr<Node> root_ptr(&graph_copy->m_root,
+                                       [](Node*) -> void {});
+        node_queue->emplace(root_ptr);
+        return {graph_copy, std::move(node_queue)};
+    }
+
     auto end() -> Iterator { return {std::make_shared<Graph>(*this), nullptr}; }
+
+    [[nodiscard]] auto end() const -> Iterator {
+        return {std::make_shared<Graph>(*this), nullptr};
+    }
 };
