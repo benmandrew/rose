@@ -1,3 +1,4 @@
+#include <fmt/format.h>
 #include <unistd.h>
 
 #include <chrono>
@@ -8,6 +9,8 @@
 #include "graph.hpp"
 #include "serialise.hpp"
 #include "table.hpp"
+
+constexpr std::string_view graph_filename = "graph.json";
 
 auto make_random_table() -> Table {
     std::optional<std::mt19937> rng = std::make_optional<std::mt19937>(0);
@@ -33,7 +36,7 @@ auto get_args(int argc, char** argv) -> std::filesystem::path {
 auto write_graph_to_file(const Graph& graph,
                          const std::filesystem::path& outpath) -> void {
     std::ofstream file;
-    file.open(outpath);
+    file.open(outpath / graph_filename);
     file << graph_to_string(graph);
     file.close();
 }
@@ -51,7 +54,8 @@ auto main(int argc, char** argv) -> int {
     start_time = get_now();
     write_graph_to_file(graph, graph_output_path);
     end_time = get_now();
-    std::cout << "Wrote graph.json in "
+    std::cout << fmt::format("Wrote {}/{} in ", graph_output_path.string(),
+                             graph_filename)
               << static_cast<double>(end_time - start_time) / 1000.0
               << " seconds\n";
     return 0;

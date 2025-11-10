@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 
+#include "moves.hpp"
+
 auto value_to_colour(size_t value) -> std::string {
     uint8_t r = (value * 256 / 5) % 256;
     uint8_t g = 255 - r;
@@ -25,11 +27,13 @@ auto serialise_nodes(const NodeToId& node_to_id) -> nlohmann::json {
         node_json["color"] = value_to_colour(node_ptr->m_depth);
         node_json["size"] = 3;
         if (id == 0) {
-            node_json["label"] = "Root";
+            node_json["label"] = "Start";
+            node_json["forceLabel"] = true;
         } else {
-            node_json["label"] = fmt::format("Node {}", id);
+            // node_json["label"] = fmt::format("Node {}", id);
         }
-        node_json["forceLabel"] = (id == 0);
+        // node_json["label"] = node_ptr->m_table.to_string();
+        // node_json["table"] = node_ptr->m_table.to_string();
         nodes.push_back(node_json);
     }
     return nodes;
@@ -43,7 +47,8 @@ auto serialise_edges(const NodeToId& node_to_id) -> nlohmann::json {
             edge_json["source"] = id;
             edge_json["target"] = node_to_id.at(edge.m_to);
             edge_json["type"] = "arrow";
-            // edge_json["move"] = edge.m_move.to_json();
+            edge_json["label"] = move_type_to_string(edge.m_move.m_type);
+            edge_json["forceLabel"] = true;
             edges.push_back(edge_json);
         }
     }

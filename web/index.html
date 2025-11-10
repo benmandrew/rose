@@ -3,27 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rose — Graph Viewer (Sigma.js)</title>
+  <title>Rose — Solitaire Game Graph Viewer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <div id="app">
     <div id="graph"></div>
-    <div id="sidebar">
-      <h1>Rose graph viewer</h1>
-      <p>This viewer reads <code>graph.json</code> and renders it with Sigma.js.</p>
-      <p><strong>Controls</strong></p>
-      <ul>
-        <li>Drag to pan</li>
-        <li>Mouse wheel to zoom</li>
-        <li>Click node to inspect</li>
-      </ul>
-      <p><strong>Sample JSON used</strong></p>
-      <pre id="jsonPreview" style="height:220px"></pre>
-      <p><button id="reloadBtn">Reload graph.json</button></p>
-      <p style="font-size:90%">Tip: run a simple HTTP server in the project root to serve this directory (see README)</p>
-    </div>
   </div>
   <script type="module" src="build/out.js"></script>
 </body>

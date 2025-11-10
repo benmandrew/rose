@@ -4,8 +4,6 @@ import ForceAtlas2 from "graphology-layout-forceatlas2";
 import Sigma from "sigma";
 
 const container = document.getElementById("graph");
-const jsonPreview = document.getElementById("jsonPreview");
-const reloadBtn = document.getElementById("reloadBtn");
 
 function resize() {
   container.style.width = `${window.innerWidth - 320}px`;
@@ -22,10 +20,8 @@ async function loadGraph(path) {
       if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`);
       return res.json();
     });
-    jsonPreview.textContent = JSON.stringify(graph, null, 2);
     return graph;
   } catch (err) {
-    jsonPreview.textContent = String(err);
     container.innerHTML =
       '<div style="padding:20px;color:#a00">Error loading graph.json — see console for details.</div>';
     console.error(err);
@@ -79,8 +75,7 @@ function jsonToGraph(json) {
 function initRenderer(g) {
   try {
     renderer = new Sigma(g, container, {
-      renderEdgeLabels: false,
-      defaultNodeColor: "#1f77b4",
+      renderEdgeLabels: true,
     });
   } catch (err) {
     console.error("Failed to construct Sigma renderer", err);
@@ -108,7 +103,5 @@ async function loadAndRender(path = "graph.json", fa2Iterations = 100) {
   setNodeCoordinates(g, fa2Iterations);
   initRenderer(g);
 }
-
-reloadBtn.addEventListener("click", () => loadAndRender());
 
 loadAndRender();
