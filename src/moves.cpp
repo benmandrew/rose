@@ -43,7 +43,8 @@ auto Move::to_string() const -> std::string {
                    std::to_string(mv.tt.m_n_cards);
         case MoveType::FoundationToTableau:
             return move_type_str + " " +
-                   c_suit_strings[static_cast<size_t>(mv.ft.m_from_suit)] +
+                   std::string{
+                       c_suit_strings[static_cast<size_t>(mv.ft.m_from_suit)]} +
                    " " + std::to_string(mv.ft.m_to_col);
         default:
             throw std::invalid_argument("Invalid move type");

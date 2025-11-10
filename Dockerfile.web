@@ -1,0 +1,15 @@
+FROM node:18-alpine
+WORKDIR /usr/src/app
+COPY web/package.json web/package-lock.json* ./web/
+WORKDIR /usr/src/app/web
+COPY web/ ./
+RUN npm ci
+RUN npm run build
+
+RUN mkdir -p /usr/src/app/shared
+VOLUME ["/usr/src/app/shared"]
+
+COPY docker/web-entrypoint.sh /usr/local/bin/web-entrypoint.sh
+RUN chmod +x /usr/local/bin/web-entrypoint.sh
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/web-entrypoint.sh"]

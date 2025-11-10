@@ -1,0 +1,7 @@
+*
+!src/*
+!include/*
+!web/*
+!docker/*
+!Dockerfile*
+!CMakeLists.txt

@@ -30,12 +30,12 @@ inline constexpr size_t c_num_cards_in_suit = 13;
 inline constexpr size_t c_num_cards = c_num_cards_in_suit * c_num_suits;
 inline constexpr size_t c_tableau_columns = 7;
 inline constexpr uint8_t c_null_index = static_cast<uint8_t>(c_num_cards);
-constexpr std::string c_no_card_string = " ";
+constexpr std::string_view c_no_card_string = " ";
 inline constexpr uint8_t c_hidden_index = static_cast<uint8_t>(c_num_cards + 1);
-constexpr std::string c_hidden_card_string = "?";
-constexpr std::array<std::string, c_num_suits> c_suit_strings = {"♠", "♥", "♦",
-                                                                 "♣"};
-constexpr std::array<std::string, c_num_cards_in_suit> c_rank_strings = {
+constexpr std::string_view c_hidden_card_string = "?";
+constexpr std::array<std::string_view, c_num_suits> c_suit_strings = {"♠", "♥",
+                                                                      "♦", "♣"};
+constexpr std::array<std::string_view, c_num_cards_in_suit> c_rank_strings = {
     "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
 
 inline auto card_to_index(Suit suit, size_t rank) -> size_t {
@@ -140,15 +140,15 @@ constexpr auto card_of_string(const std::string& card_str) -> uint8_t {
 
 inline auto card_to_string(uint8_t card_index) -> std::string {
     if (card_index == c_hidden_index) {
-        return c_hidden_card_string;
+        return std::string{c_hidden_card_string};
     }
     if (card_index == c_null_index) {
-        return c_no_card_string;
+        return std::string{c_no_card_string};
     }
     assert(card_index >= 0 && card_index < static_cast<uint8_t>(c_num_cards));
     auto [suit, rank] = index_to_card(static_cast<size_t>(card_index));
-    return c_rank_strings[static_cast<size_t>(rank)] +
-           c_suit_strings[static_cast<size_t>(suit)];
+    return std::string{c_rank_strings[static_cast<size_t>(rank)]} +
+           std::string{c_suit_strings[static_cast<size_t>(suit)]};
 }
 
 inline auto import_deck(const std::string& deck_path)

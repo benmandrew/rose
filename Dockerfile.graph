@@ -1,0 +1,26 @@
+FROM ubuntu:22.04 AS builder
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake git ca-certificates wget gnupg && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor > /usr/share/keyrings/llvm-archive-keyring.gpg; \
+    echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main" > /etc/apt/sources.list.d/llvm.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends clang-18; \
+    rm -rf /var/lib/apt/lists/*;
+
+ENV CC=clang-18
+ENV CXX=clang++-18
+WORKDIR /src
+COPY . .
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+RUN cmake --build build -j$(nproc)
+
+FROM debian:bookworm-slim
+WORKDIR /app
+COPY --from=builder /src/build/rose ./rose
+RUN mkdir -p /app/web /app/shared && chmod 755 /app
+VOLUME ["/app/shared"]
+COPY docker/cpp-entrypoint.sh /usr/local/bin/cpp-entrypoint.sh
+RUN chmod +x /usr/local/bin/cpp-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/cpp-entrypoint.sh"]

@@ -1,6 +1,7 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <filesystem>
 #include <iostream>
 #include <optional>
 
@@ -21,7 +22,24 @@ auto make_random_table() -> Table {
             .count());
 }
 
-auto main() -> int {
+auto get_args(int argc, char** argv) -> std::filesystem::path {
+    if (argc < 2) {
+        std::cout << "Usage: rose <graph_output_path>\n";
+        exit(1);
+    }
+    return {argv[1]};
+}
+
+auto write_graph_to_file(const Graph& graph,
+                         const std::filesystem::path& outpath) -> void {
+    std::ofstream file;
+    file.open(outpath);
+    file << graph_to_string(graph);
+    file.close();
+}
+
+auto main(int argc, char** argv) -> int {
+    auto graph_output_path = get_args(argc, argv);
     auto table = make_random_table();
     auto graph = Graph(table);
     size_t start_time = get_now();
@@ -30,14 +48,11 @@ auto main() -> int {
     std::cout << "Generated graph in "
               << static_cast<double>(end_time - start_time) / 1000.0
               << " seconds\n";
-    std::ofstream myfile;
-    myfile.open("web/graph.json");
     start_time = get_now();
-    myfile << graph_to_string(graph);
+    write_graph_to_file(graph, graph_output_path);
     end_time = get_now();
     std::cout << "Wrote graph.json in "
               << static_cast<double>(end_time - start_time) / 1000.0
               << " seconds\n";
-    myfile.close();
     return 0;
 }
