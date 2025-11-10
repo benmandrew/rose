@@ -21,6 +21,6 @@ WORKDIR /app
 COPY --from=builder /src/build/rose ./rose
 RUN mkdir -p /app/web /app/shared && chmod 755 /app
 VOLUME ["/app/shared"]
-COPY docker/cpp-entrypoint.sh /usr/local/bin/cpp-entrypoint.sh
-RUN chmod +x /usr/local/bin/cpp-entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/cpp-entrypoint.sh"]
+COPY docker/graph-entrypoint.sh /usr/local/bin/graph-entrypoint.sh
+RUN chmod +x /usr/local/bin/graph-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/graph-entrypoint.sh"]
