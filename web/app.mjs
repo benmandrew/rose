@@ -4,6 +4,7 @@ import ForceAtlas2 from "graphology-layout-forceatlas2";
 import Sigma from "sigma";
 
 const container = document.getElementById("graph");
+const tableView = document.getElementById("tableView");
 
 function resize() {
   container.style.width = `${window.innerWidth - 320}px`;
@@ -78,7 +79,7 @@ function initRenderer(g) {
   });
   renderer.on("clickNode", ({ node }) => {
     const attrs = g.getNodeAttributes(node);
-    alert(attrs.table || "No table data");
+    tableView.textContent = attrs.table || "No table data";
   });
 }
 
