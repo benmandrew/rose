@@ -5,30 +5,25 @@ project(rose
     DESCRIPTION "Visualise the state spaces of Solitaire games"
     LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Provide a sensible default for single-config generators (Makefiles, Ninja).
-# Users can still override with -DCMAKE_BUILD_TYPE=Debug or Release on the
-# cmake command line. For multi-config generators (Xcode, Visual Studio) this
-# has no effect and the generator manages configurations itself.
+string(APPEND CMAKE_CXX_FLAGS " -Wall")
+string(APPEND CMAKE_CXX_FLAGS " -Wbuiltin-macro-redefined")
+string(APPEND CMAKE_CXX_FLAGS " -pedantic")
+string(APPEND CMAKE_CXX_FLAGS " -Werror")
+
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type specified. Defaulting to Debug. To get a release build, run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release")
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-# Ensure debug symbols are present for Debug and RelWithDebInfo.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g")
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# If user/configure requested ccache as the compiler launcher but ccache
-# is not available on this machine, unset the launcher variables so the
-# build doesn't fail at compile time trying to run a missing program.
 find_program(_CCACHE_PROGRAM NAMES ccache)
 if(NOT _CCACHE_PROGRAM)
     if(DEFINED CMAKE_C_COMPILER_LAUNCHER AND CMAKE_C_COMPILER_LAUNCHER)
@@ -77,8 +72,8 @@ if (NOT TARGET fmt::fmt)
     message(STATUS "fmt not found via find_package; fetching fmt via FetchContent")
     FetchContent_Declare(
         fmt
-        URL https://github.com/fmtlib/fmt/releases/download/12.1.0/fmt-12.1.0.zip
-        DOWNLOAD_EXTRACT_TIMESTAMP NEW)
+        DOWNLOAD_EXTRACT_TIMESTAMP NEW
+        URL https://github.com/fmtlib/fmt/releases/download/12.1.0/fmt-12.1.0.zip)
     FetchContent_MakeAvailable(fmt)
 endif()
 
@@ -88,8 +83,8 @@ if (NOT TARGET nlohmann_json::nlohmann_json)
     message(STATUS "nlohmann_json not found via find_package; fetching nlohmann_json via FetchContent")
     FetchContent_Declare(
         json
-        URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
-        DOWNLOAD_EXTRACT_TIMESTAMP NEW)
+        DOWNLOAD_EXTRACT_TIMESTAMP NEW
+        URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
     FetchContent_MakeAvailable(json)
 endif()
 

@@ -33,7 +33,7 @@ struct Move {
             Suit m_from_suit;
             size_t m_to_col;
         } ft;
-    };
+    } mv;
 
     [[nodiscard]] auto to_string() const -> std::string;
     [[nodiscard]] auto to_json() const -> nlohmann::json;
