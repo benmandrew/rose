@@ -33,7 +33,7 @@ auto serialise_nodes(const NodeToId& node_to_id) -> nlohmann::json {
             // node_json["label"] = fmt::format("Node {}", id);
         }
         // node_json["label"] = node_ptr->m_table.to_string();
-        // node_json["table"] = node_ptr->m_table.to_string();
+        node_json["table"] = node_ptr->m_table.to_string();
         nodes.push_back(node_json);
     }
     return nodes;

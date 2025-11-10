@@ -73,25 +73,13 @@ function jsonToGraph(json) {
 }
 
 function initRenderer(g) {
-  try {
-    renderer = new Sigma(g, container, {
-      renderEdgeLabels: true,
-    });
-  } catch (err) {
-    console.error("Failed to construct Sigma renderer", err);
-    throw err;
-  }
-  // If we have Sigma v2 renderer, wire a click handler using its API
-  if (renderer?.on && g) {
-    try {
-      renderer.on("clickNode", ({ node }) => {
-        const attrs = g.getNodeAttributes(node);
-        alert(`Node ${node}\n${JSON.stringify(attrs, null, 2)}`);
-      });
-    } catch (_e) {
-      // ignore if event API differs
-    }
-  }
+  renderer = new Sigma(g, container, {
+    renderEdgeLabels: true,
+  });
+  renderer.on("clickNode", ({ node }) => {
+    const attrs = g.getNodeAttributes(node);
+    alert(attrs.table || "No table data");
+  });
 }
 
 async function loadAndRender(path = "graph.json", fa2Iterations = 100) {
