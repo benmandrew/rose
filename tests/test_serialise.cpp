@@ -8,8 +8,9 @@ TEST_CASE("Graph to JSON", "[serialise]") {
     auto deck = import_deck(res_dir / "random-deck.txt");
     Table table(deck);
     Graph graph(table);
-    graph.generate(1);
-    nlohmann::json graph_json = graph_to_json(graph);
+    constexpr size_t max_depth = 1;
+    graph.generate(max_depth);
+    nlohmann::json graph_json = graph_to_json(graph, max_depth);
     REQUIRE(graph_json.contains("nodes"));
     REQUIRE(graph_json.contains("edges"));
     REQUIRE(graph_json["nodes"].is_array());

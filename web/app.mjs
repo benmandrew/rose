@@ -42,7 +42,10 @@ function resetRenderer(renderer) {
 
 function setNodeCoordinates(g, fa2Iterations) {
   circular.assign(g);
-  const settings = ForceAtlas2.inferSettings(g);
+  // const settings = ForceAtlas2.inferSettings(g);
+  const settings = {
+    gravity: 0,
+  };
   if (ForceAtlas2 && typeof ForceAtlas2.assign === "function") {
     ForceAtlas2.assign(g, { iterations: fa2Iterations, settings: settings });
   } else if (typeof ForceAtlas2 === "function") {
@@ -75,7 +78,7 @@ function jsonToGraph(json) {
 
 function initRenderer(g) {
   renderer = new Sigma(g, container, {
-    renderEdgeLabels: true,
+    // renderEdgeLabels: true,
   });
   renderer.on("clickNode", ({ node }) => {
     const attrs = g.getNodeAttributes(node);
