@@ -14,7 +14,7 @@
     "simple-file-watch": "3.1.1"
   },
   "scripts": {
-    "build": "esbuild app.mjs --bundle --sourcemap --outfile=build/out.js",
+    "build": "esbuild app.mjs --bundle --minify --outfile=build/out.js",
     "format": "biome format --write .",
     "format-check": "biome format",
     "lint": "biome lint"

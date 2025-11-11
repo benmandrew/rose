@@ -90,6 +90,12 @@ endif()
 add_executable(rose src/main.cpp)
 target_link_libraries(rose PRIVATE rose_lib)
 
+option(BUILD_WEB "Build the web frontend (requires npm)" ON)
+
+if(BUILD_WEB)
+    add_subdirectory(web)
+endif()
+
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
 if(CLANG_FORMAT_EXE)
     file(GLOB_RECURSE ALL_CXX_SOURCE_FILES
@@ -114,6 +120,21 @@ if(CLANG_TIDY_EXE)
         COMMENT "Running clang-tidy on src files")
 else()
     add_custom_target(lint COMMENT "clang-tidy not found on PATH")
+endif()
+
+# Wire web targets into top-level format/lint/build if available
+if(BUILD_WEB)
+    if(TARGET format AND TARGET web_format)
+        add_dependencies(format web_format)
+    endif()
+    if(TARGET lint AND TARGET web_lint)
+        add_dependencies(lint web_lint)
+    endif()
+    if(TARGET web_build)
+        # Make the main executable depend on the web build so 'cmake --build'
+        # will build the web bundle as well.
+        add_dependencies(rose web_build)
+    endif()
 endif()
 
 install(TARGETS rose RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

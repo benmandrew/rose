@@ -1,10 +1,15 @@
-## Building
+## Run with Docker
 
 ```bash
-mkdir -p build
-cd build
-cmake --build .
-./rose
+docker compose up
+```
+
+Access the web app on http://localhost:8080.
+
+### Build
+
+```bash
+cmake --build . -j
 ```
 
 ### Run Tests
@@ -13,14 +18,18 @@ cmake --build .
 cmake --build . --target tests
 ```
 
-### Lint (`clang-tidy`)
+### Lint
 
 ```bash
 cmake --build . --target lint
 ```
 
-### Format (`clang-format`)
+(Requires `clang-tidy`.)
+
+### Format
 
 ```bash
 cmake --build . --target format
 ```
+
+(Requires `clang-format`.)
