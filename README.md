@@ -1,3 +1,9 @@
+# Rose
+
+Visualiser for Solitaire game graphs.
+
+![Screenshot](doc/screenshot.png)
+
 ## Run with Docker
 
 ```bash
