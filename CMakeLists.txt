@@ -56,7 +56,6 @@ file(GLOB ROSE_LIB_SRC CONFIGURE_DEPENDS
 )
 list(REMOVE_ITEM ROSE_LIB_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/fuzz.cpp"
 )
 add_library(rose_lib STATIC
     ${ROSE_LIB_SRC}
@@ -90,9 +89,6 @@ endif()
 
 add_executable(rose src/main.cpp)
 target_link_libraries(rose PRIVATE rose_lib)
-
-add_executable(rose_fuzz src/fuzz.cpp)
-target_link_libraries(rose_fuzz PRIVATE rose_lib)
 
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
 if(CLANG_FORMAT_EXE)
