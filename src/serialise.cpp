@@ -22,12 +22,14 @@ using NodeToId = std::unordered_map<std::shared_ptr<const Node>, size_t>;
 auto serialise_nodes(const NodeToId& node_to_id, size_t max_depth)
     -> nlohmann::json {
     nlohmann::json nodes = nlohmann::json::array();
+    auto max_depth_f = static_cast<float>(max_depth);
     for (const auto& [node_ptr, id] : node_to_id) {
         nlohmann::json node_json;
         node_json["id"] = id;
         node_json["color"] = value_to_colour(node_ptr->m_depth, max_depth);
         node_json["size"] =
-            1 + ((max_depth - node_ptr->m_depth) * 9 / max_depth);
+            1.0 + ((max_depth_f - static_cast<float>(node_ptr->m_depth)) * 9.0 /
+                   max_depth_f);
         if (id == 0) {
             node_json["label"] = "Start";
             node_json["forceLabel"] = true;

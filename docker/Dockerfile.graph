@@ -11,16 +11,13 @@ RUN set -eux; \
 
 ENV CC=clang-18
 ENV CXX=clang++-18
-WORKDIR /src
 COPY . .
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 RUN cmake --build build -j$(nproc)
 
 FROM debian:bookworm-slim
 WORKDIR /app
-COPY --from=builder /src/build/rose ./rose
-RUN mkdir -p /app/web /app/shared && chmod 755 /app
+COPY --from=builder /build/rose ./rose
+RUN mkdir -p /app/shared && chmod 755 /app
 VOLUME ["/app/shared"]
-COPY docker/graph-entrypoint.sh /usr/local/bin/graph-entrypoint.sh
-RUN chmod +x /usr/local/bin/graph-entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/graph-entrypoint.sh"]
+ENTRYPOINT ["sh", "-c", "/app/rose /app/shared && tail -F /dev/null"]

@@ -9,7 +9,7 @@ RUN npm run build
 RUN mkdir -p /usr/src/app/shared
 VOLUME ["/usr/src/app/shared"]
 
-COPY docker/web-entrypoint.sh /usr/local/bin/web-entrypoint.sh
-RUN chmod +x /usr/local/bin/web-entrypoint.sh
+RUN ln -sf /usr/src/app/shared/graph.json /usr/src/app/web/graph.json
+
 EXPOSE 8080
-ENTRYPOINT ["/usr/local/bin/web-entrypoint.sh"]
+ENTRYPOINT ["npx", "live-server", "--port=8080", "--no-browser", "/usr/src/app/web"]

@@ -47,9 +47,10 @@ auto write_graph_to_file(const Graph& graph,
     file.close();
 }
 
-constexpr size_t max_depth = 12;
+constexpr size_t max_depth = 10;
 
 auto main(int argc, char** argv) -> int {
+    std::cout << "max_depth: " << max_depth << "\n";
     auto graph_output_path = get_args(argc, argv);
     auto table = make_random_table();
     auto graph = Graph(table);
