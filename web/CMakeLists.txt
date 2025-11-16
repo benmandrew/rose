@@ -8,12 +8,12 @@ if(NPM_EXECUTABLE)
     message(STATUS "Found npm: ${NPM_EXECUTABLE}")
 
     add_custom_target(web_install_deps
-        COMMAND ${NPM_EXECUTABLE} ci
+        COMMAND ${NPM_EXECUTABLE} ci --quiet
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Installing web dependencies (npm ci)")
 
     add_custom_target(web_build
-        COMMAND ${NPM_EXECUTABLE} run build
+        COMMAND ${NPM_EXECUTABLE} run build --quiet
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Building web bundle"
         DEPENDS web_install_deps)

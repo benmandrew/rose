@@ -17,6 +17,7 @@ class Node {
     Table m_table;
     std::vector<Edge> m_edges;
     size_t m_depth;
+    bool m_deadend;
 
     Node(const Table& table, size_t depth);
 };

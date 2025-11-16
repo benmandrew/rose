@@ -44,7 +44,8 @@ function setNodeCoordinates(g, fa2Iterations) {
   circular.assign(g);
   // const settings = ForceAtlas2.inferSettings(g);
   const settings = {
-    gravity: 0,
+    gravity: 1,
+    barnesHutOptimize: true,
   };
   if (ForceAtlas2 && typeof ForceAtlas2.assign === "function") {
     ForceAtlas2.assign(g, { iterations: fa2Iterations, settings: settings });

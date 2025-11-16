@@ -41,9 +41,11 @@ auto get_args(int argc, char** argv) -> std::filesystem::path {
 auto write_graph_to_file(const Graph& graph,
                          const std::filesystem::path& outpath, size_t max_depth)
     -> void {
+    std::string graph_string = graph_to_string(graph, max_depth);
+    std::cout << graph_string << "\n";
     std::ofstream file;
     file.open(outpath / graph_filename);
-    file << graph_to_string(graph, max_depth);
+    file << graph_string;
     file.close();
 }
 

@@ -6,11 +6,16 @@
 
 #include "table.hpp"
 
-Node::Node(const Table& table, size_t depth) : m_table(table), m_depth(depth) {}
+Node::Node(const Table& table, size_t depth)
+    : m_table(table), m_depth(depth), m_deadend(true) {}
 
 Edge::Edge(const Move& move, const std::shared_ptr<Node>& from,
            const std::shared_ptr<Node>& to)
-    : m_move(move), m_from(from), m_to(to) {}
+    : m_move(move), m_from(from), m_to(to) {
+    if (from->m_deadend) {
+        from->m_deadend = false;
+    }
+}
 
 Graph::Graph(const Table& initial_table) : m_root(initial_table, 0) {}
 
