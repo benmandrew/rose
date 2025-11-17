@@ -5,6 +5,7 @@
 #include <iostream>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "graph.hpp"
 #include "serialise.hpp"
@@ -13,7 +14,7 @@
 constexpr std::string_view graph_filename = "graph.json";
 
 auto make_random_table() -> Table {
-    std::optional<std::mt19937> rng = std::make_optional<std::mt19937>(0);
+    auto rng = std::make_optional<std::mt19937>(0);
     auto deck = random_deck(rng);
     return {deck};
 }
@@ -25,37 +26,75 @@ auto make_random_table() -> Table {
             .count());
 }
 
-auto get_args(int argc, char** argv) -> std::filesystem::path {
+struct CmdArgs {
+    std::filesystem::path out_dir;
+    std::optional<std::filesystem::path> deck_file;
+};
+
+auto parse_args(int argc, char** argv) -> CmdArgs {
     if (argc < 2) {
-        std::cerr << "Usage: rose <graph_output_path>\n";
+        std::cerr
+            << "Usage: rose [--deck <deckfile>] <graph_output_directory>\n";
         exit(1);
     }
-    try {
-        return {argv[1]};
-    } catch (...) {
-        std::cerr << "Error parsing arguments\n";
+    CmdArgs args;
+    std::vector<std::string> positionals;
+    for (int i = 1; i < argc; ++i) {
+        std::string_view a = argv[i];
+        if (a == "--deck") {
+            if (i + 1 >= argc) {
+                std::cerr << "--deck requires a file path\n";
+                exit(1);
+            }
+            args.deck_file = std::filesystem::path(argv[++i]);
+        } else if (a.rfind("--deck=", 0) == 0) {
+            args.deck_file = std::filesystem::path(std::string(a.substr(7)));
+        } else if (a.rfind("--", 0) == 0) {
+            std::cerr << "Unknown option: " << a << "\n";
+            std::cerr
+                << "Usage: rose [--deck <deckfile>] <graph_output_directory>\n";
+            exit(1);
+        } else {
+            positionals.emplace_back(argv[i]);
+        }
+    }
+    if (positionals.empty()) {
+        std::cerr << "Missing output directory.\n";
+        std::cerr
+            << "Usage: rose [--deck <deckfile>] <graph_output_directory>\n";
         exit(1);
     }
+    args.out_dir = positionals.back();
+    if (positionals.size() > 1) {
+        std::cerr << "Warning: extra positional arguments ignored (using '"
+                  << args.out_dir.string() << "' as output directory)\n";
+    }
+
+    return args;
 }
 
 auto write_graph_to_file(const Graph& graph,
                          const std::filesystem::path& outpath, size_t max_depth)
     -> void {
-    std::string graph_string = graph_to_string(graph, max_depth);
-    std::cout << graph_string << "\n";
     std::ofstream file;
     file.open(outpath / graph_filename);
-    file << graph_string;
+    file << graph_to_string(graph, max_depth);
     file.close();
+}
+
+auto make_table(std::optional<std::filesystem::path>& deck_path) -> Table {
+    if (deck_path) {
+        return Table(import_deck(*deck_path));
+    }
+    return make_random_table();
 }
 
 constexpr size_t max_depth = 10;
 
 auto main(int argc, char** argv) -> int {
-    std::cout << "max_depth: " << max_depth << "\n";
-    auto graph_output_path = get_args(argc, argv);
-    auto table = make_random_table();
-    auto graph = Graph(table);
+    std::cout << "Max depth: " << max_depth << "\n";
+    auto parsed = parse_args(argc, argv);
+    auto graph = Graph(make_table(parsed.deck_file));
     size_t start_time = get_now();
     graph.generate(max_depth);
     size_t end_time = get_now();
@@ -63,9 +102,9 @@ auto main(int argc, char** argv) -> int {
               << static_cast<double>(end_time - start_time) / 1000.0
               << " seconds\n";
     start_time = get_now();
-    write_graph_to_file(graph, graph_output_path, max_depth);
+    write_graph_to_file(graph, parsed.out_dir, max_depth);
     end_time = get_now();
-    std::cout << fmt::format("Wrote {}/{} in ", graph_output_path.string(),
+    std::cout << fmt::format("Wrote {}/{} in ", parsed.out_dir.string(),
                              graph_filename)
               << static_cast<double>(end_time - start_time) / 1000.0
               << " seconds\n";

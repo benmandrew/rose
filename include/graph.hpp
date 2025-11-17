@@ -3,7 +3,7 @@
 #include <iterator>
 #include <memory>
 #include <queue>
-#include <unordered_set>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -37,7 +37,7 @@ using NodeQueue = std::queue<std::shared_ptr<Node>>;
 
 class Graph {
    private:
-    std::unordered_set<Table> m_seen_tables;
+    std::set<Table, TableComparator> m_seen_tables;
     Node m_root;
 
     auto generate_next_tables(DepthNodeQueue& node_queue,

@@ -5,8 +5,10 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "moves.hpp"
 #include "nlohmann/json.hpp"
@@ -47,13 +49,14 @@ auto value_to_colour(size_t value, size_t max_depth, bool deadend)
     return {buffer.data()};
 }
 
-using NodeToId = std::unordered_map<std::shared_ptr<const Node>, size_t>;
+using NodeList = std::vector<std::shared_ptr<const Node>>;
 
-auto serialise_nodes(const NodeToId& node_to_id, size_t max_depth)
+auto serialise_nodes(const NodeList& nodes, size_t max_depth)
     -> nlohmann::json {
-    nlohmann::json nodes = nlohmann::json::array();
+    nlohmann::json out = nlohmann::json::array();
     auto max_depth_f = static_cast<float>(max_depth);
-    for (const auto& [node_ptr, id] : node_to_id) {
+    for (size_t id = 0; id < nodes.size(); ++id) {
+        const auto& node_ptr = nodes[id];
         nlohmann::json node_json;
         node_json["id"] = id;
         bool deadend = node_ptr->m_deadend && node_ptr->m_depth != max_depth;
@@ -67,18 +70,37 @@ auto serialise_nodes(const NodeToId& node_to_id, size_t max_depth)
             node_json["forceLabel"] = true;
         }
         node_json["table"] = node_ptr->m_table.to_string();
-        nodes.push_back(node_json);
+        out.push_back(node_json);
     }
-    return nodes;
+    return out;
 }
 
-auto serialise_edges(const NodeToId& node_to_id) -> nlohmann::json {
+auto build_ptr_to_id_map(const NodeList& nodes)
+    -> std::unordered_map<const Node*, size_t> {
+    std::unordered_map<const Node*, size_t> ptr_to_id;
+    ptr_to_id.reserve(nodes.size());
+    for (size_t i = 0; i < nodes.size(); ++i) {
+        ptr_to_id.emplace(nodes[i].get(), i);
+    }
+    return ptr_to_id;
+}
+
+auto serialise_edges(const NodeList& nodes) -> nlohmann::json {
     nlohmann::json edges = nlohmann::json::array();
-    for (const auto& [node_ptr, id] : node_to_id) {
+    std::unordered_map<const Node*, size_t> ptr_to_id =
+        build_ptr_to_id_map(nodes);
+    for (size_t id = 0; id < nodes.size(); ++id) {
+        const auto& node_ptr = nodes[id];
         for (const auto& edge : node_ptr->m_edges) {
             nlohmann::json edge_json;
             edge_json["source"] = id;
-            edge_json["target"] = node_to_id.at(edge.m_to);
+            const Node* to_ptr = edge.m_to.get();
+            auto it = ptr_to_id.find(to_ptr);
+            if (it == ptr_to_id.end()) {
+                // target node wasn't in the traversal (maybe beyond max depth)
+                continue;
+            }
+            edge_json["target"] = it->second;
             edge_json["type"] = "arrow";
             edge_json["label"] = move_type_to_string(edge.m_move.m_type);
             edges.push_back(edge_json);
@@ -88,18 +110,18 @@ auto serialise_edges(const NodeToId& node_to_id) -> nlohmann::json {
 }
 
 auto graph_to_json(const Graph& graph, size_t max_depth) -> nlohmann::json {
-    NodeToId node_to_id;
-    size_t node_id = 0;
+    NodeList nodes;
+    nodes.reserve(256);
     auto it = graph.begin();
     auto owner = it.owner();
     auto end = graph.end();
     for (; it != end; ++it) {
         const auto& node_ptr = *it;
-        node_to_id[std::shared_ptr<const Node>(node_ptr)] = node_id++;
+        nodes.push_back(std::shared_ptr<const Node>(node_ptr));
     }
     nlohmann::json j;
-    j["nodes"] = serialise_nodes(node_to_id, max_depth);
-    j["edges"] = serialise_edges(node_to_id);
+    j["nodes"] = serialise_nodes(nodes, max_depth);
+    j["edges"] = serialise_edges(nodes);
     return j;
 }
 

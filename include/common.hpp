@@ -151,7 +151,7 @@ inline auto card_to_string(uint8_t card_index) -> std::string {
            std::string{c_suit_strings[static_cast<size_t>(suit)]};
 }
 
-inline auto import_deck(const std::string& deck_path)
+inline auto import_deck(const std::filesystem::path& deck_path)
     -> std::array<uint8_t, c_num_cards> {
     std::array<uint8_t, c_num_cards> deck{};
     std::ifstream infile(deck_path);
