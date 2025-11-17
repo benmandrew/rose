@@ -112,14 +112,28 @@ else()
     add_custom_target(format COMMENT "clang-format not found on PATH")
 endif()
 
-find_program(CLANG_TIDY_EXE NAMES clang-tidy clang-tidy-14 clang-tidy-15)
-if(CLANG_TIDY_EXE)
-    add_custom_target(lint
-        COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Running clang-tidy on src files")
+find_program(CPPLINT NAMES cpplint cpplint.py PATHS /usr/bin /usr/local/bin /opt/homebrew/bin)
+if(CPPLINT)
+    file(GLOB_RECURSE LINT_SOURCE_FILES "src/*.cpp" "include/*.hpp" "tests/*.cpp")
+    if(LINT_SOURCE_FILES)
+        add_custom_target(lint
+            COMMAND ${CPPLINT} --linelength=80 --quiet ${LINT_SOURCE_FILES}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Running cpplint on source files"
+        )
+    else()
+        message(STATUS "No source files found for cpplint")
+        add_custom_target(lint
+            COMMAND echo "No source files to lint"
+            COMMENT "Lint target (cpplint) disabled - no files found"
+        )
+    endif()
 else()
-    add_custom_target(lint COMMENT "clang-tidy not found on PATH")
+    message(WARNING "cpplint not found, lint target will not be available")
+    add_custom_target(lint
+        COMMAND echo "Lint not available - cpplint not found"
+        COMMENT "Lint target disabled"
+    )
 endif()
 
 # Wire web targets into top-level format/lint/build if available

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include <string>
+#include <vector>
 
+#include "nlohmann/json.hpp"
 #include "table.hpp"
 
 enum class MoveType : uint8_t {

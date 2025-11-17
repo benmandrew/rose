@@ -4,9 +4,12 @@
 #include <sys/types.h>
 
 #include <cstdint>
-#include <nlohmann/json.hpp>
+#include <cstdio>
+#include <string>
+#include <unordered_map>
 
 #include "moves.hpp"
+#include "nlohmann/json.hpp"
 
 #define DEADEND_COLOR "#93032EFF"
 #define START_COLOR "#034C3CFF"

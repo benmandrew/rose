@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <iterator>
 #include <optional>
+#include <string>
+#include <vector>
 
 #include "common.hpp"
 

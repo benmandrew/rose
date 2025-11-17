@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "graph.hpp"
 
 auto graph_to_json(const Graph& graph, size_t max_depth) -> nlohmann::json;

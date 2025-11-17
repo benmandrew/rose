@@ -45,7 +45,7 @@ class Graph {
                               size_t current_depth) -> DepthNodeQueue&;
 
    public:
-    Graph(const Table& initial_table);
+    explicit Graph(const Table& initial_table);
     [[nodiscard]] auto get_root() const -> Node { return m_root; }
     auto generate(size_t depth = SIZE_MAX) -> void;
 
