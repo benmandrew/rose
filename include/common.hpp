@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <fstream>
 #include <optional>
 #include <random>

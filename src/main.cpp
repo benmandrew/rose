@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <iostream>
 #include <optional>
 #include <string>

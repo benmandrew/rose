@@ -1,6 +1,5 @@
 #include "graph.hpp"
 
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <utility>
