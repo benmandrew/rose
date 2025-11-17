@@ -12,21 +12,24 @@
 #include "moves.hpp"
 #include "nlohmann/json.hpp"
 
-#define DEADEND_COLOR "#93032EFF"
-#define START_COLOR "#034C3CFF"
-#define END_COLOR "#A6A15EFF"
+// #36829F
+#define DEADEND_COLOR 0x36829FFF
+// #C97D60
+#define START_COLOR 0xC97D60FF
+// #63372C
+#define END_COLOR 0x63372CFF
 #define COLOR_TO_R(color) ((color >> 24) & 0xFF)
 #define COLOR_TO_G(color) ((color >> 16) & 0xFF)
 #define COLOR_TO_B(color) ((color >> 8) & 0xFF)
-#define DEADEND_R COLOR_TO_R(0x93032EFF)
-#define DEADEND_G COLOR_TO_G(0x93032EFF)
-#define DEADEND_B COLOR_TO_B(0x93032EFF)
-#define START_R COLOR_TO_R(0x034C3CFF)
-#define START_G COLOR_TO_G(0x034C3CFF)
-#define START_B COLOR_TO_B(0x034C3CFF)
-#define END_R COLOR_TO_R(0xA6A15EFF)
-#define END_G COLOR_TO_G(0xA6A15EFF)
-#define END_B COLOR_TO_B(0xA6A15EFF)
+#define DEADEND_R COLOR_TO_R(DEADEND_COLOR)
+#define DEADEND_G COLOR_TO_G(DEADEND_COLOR)
+#define DEADEND_B COLOR_TO_B(DEADEND_COLOR)
+#define START_R COLOR_TO_R(START_COLOR)
+#define START_G COLOR_TO_G(START_COLOR)
+#define START_B COLOR_TO_B(START_COLOR)
+#define END_R COLOR_TO_R(END_COLOR)
+#define END_G COLOR_TO_G(END_COLOR)
+#define END_B COLOR_TO_B(END_COLOR)
 
 auto lerp(uint8_t start, uint8_t end, float t) -> uint8_t {
     auto start_f = static_cast<float>(start);
@@ -36,13 +39,17 @@ auto lerp(uint8_t start, uint8_t end, float t) -> uint8_t {
 
 auto value_to_colour(size_t value, size_t max_depth, bool deadend)
     -> std::string {
+    uint8_t r, g, b;
     if (deadend) {
-        return DEADEND_COLOR;
+        r = DEADEND_R;
+        g = DEADEND_G;
+        b = DEADEND_B;
+    } else {
+        float t = static_cast<float>(value) / static_cast<float>(max_depth);
+        r = lerp(START_R, END_R, t);
+        g = lerp(START_G, END_G, t);
+        b = lerp(START_B, END_B, t);
     }
-    float t = static_cast<float>(value) / static_cast<float>(max_depth);
-    uint8_t r = lerp(START_R, END_R, t);
-    uint8_t g = lerp(START_G, END_G, t);
-    uint8_t b = lerp(START_B, END_B, t);
     std::array<char, 10> buffer;
     std::snprintf(buffer.data(), buffer.size(), "#%02X%02X%02XFF", r, g, b);
     return {buffer.data()};
