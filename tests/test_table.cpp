@@ -80,24 +80,28 @@ TEST_CASE("Stock to Waste", "[table]") {
     table.m_deck[CARD("3♥")] = CARD("4♦");
     table.m_deck[CARD("4♦")] = c_null_index;
     table.m_waste_index = c_null_index;
-    REQUIRE(table.header_to_string() ==
-            "Stock: ?  Waste:    Foundations:                 \n");
-    table.move_from_stock_to_waste();
-    REQUIRE(table.header_to_string() ==
-            "Stock: ?  Waste: A♠ Foundations:                 \n");
-    table.move_from_stock_to_waste();
-    REQUIRE(table.header_to_string() ==
-            "Stock: ?  Waste: 3♥ Foundations:                 \n");
-    table.move_from_stock_to_waste();
-    REQUIRE(table.header_to_string() ==
-            "Stock:    Waste: 4♦ Foundations:                 \n");
-    table.move_from_stock_to_waste();
-    REQUIRE(table.header_to_string() ==
-            "Stock:    Waste: 4♦ Foundations:                 \n");
-    table.reset_stock_from_waste();
-    REQUIRE(table.header_to_string() ==
-            "Stock: ?  Waste:    Foundations:                 \n");
-    table.reset_stock_from_waste();
-    REQUIRE(table.header_to_string() ==
-            "Stock: ?  Waste:    Foundations:                 \n");
+    Table prev_table = table;
+    for (size_t i = 0; i < 4; i++) {
+        REQUIRE(table.header_to_string() ==
+                "Stock: ?  Waste:    Foundations:                 \n");
+        table.move_from_stock_to_waste();
+        REQUIRE(table.header_to_string() ==
+                "Stock: ?  Waste: A♠ Foundations:                 \n");
+        table.move_from_stock_to_waste();
+        REQUIRE(table.header_to_string() ==
+                "Stock: ?  Waste: 3♥ Foundations:                 \n");
+        table.move_from_stock_to_waste();
+        REQUIRE(table.header_to_string() ==
+                "Stock:    Waste: 4♦ Foundations:                 \n");
+        table.move_from_stock_to_waste();
+        REQUIRE(table.header_to_string() ==
+                "Stock:    Waste: 4♦ Foundations:                 \n");
+        table.reset_stock_from_waste();
+        REQUIRE(table.header_to_string() ==
+                "Stock: ?  Waste:    Foundations:                 \n");
+        table.reset_stock_from_waste();
+        REQUIRE(table.header_to_string() ==
+                "Stock: ?  Waste:    Foundations:                 \n");
+        REQUIRE(table == prev_table);
+    }
 }
