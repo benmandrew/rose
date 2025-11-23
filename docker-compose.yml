@@ -9,6 +9,7 @@ services:
     volumes:
       - shared:/app/shared
     restart: "no"
+    init: true
     healthcheck:
       test: ["CMD", "test", "-f", "/app/shared/graph.json"]
       interval: 1s
