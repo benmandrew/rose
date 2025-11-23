@@ -13,7 +13,9 @@
 #include "table.hpp"
 
 auto make_random_table() -> Table {
-    auto rng = std::make_optional<std::mt19937>(0);
+    auto seed = std::random_device{}();
+    std::cout << "Using random seed: " << seed << "\n";
+    auto rng = std::make_optional<std::mt19937>(seed);
     auto deck = random_deck(rng);
     return {deck};
 }
@@ -79,7 +81,7 @@ auto make_table(std::optional<std::filesystem::path>& deck_path) -> Table {
     return make_random_table();
 }
 
-constexpr size_t max_depth = 10;
+constexpr size_t max_depth = 20;
 constexpr std::string_view graph_filename = "graph.json";
 
 auto main(int argc, char** argv) -> int {

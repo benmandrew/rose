@@ -12,12 +12,12 @@
 #include "moves.hpp"
 #include "nlohmann/json.hpp"
 
-// #36829F
-#define DEADEND_COLOR 0x36829FFF
-// #C97D60
-#define START_COLOR 0xC97D60FF
-// #63372C
-#define END_COLOR 0x63372CFF
+// #F5D547
+#define DEADEND_COLOR 0xF5D547FF
+// #1446A0
+#define START_COLOR 0x1446A0FF
+// #DB3069
+#define END_COLOR 0xDB3069FF
 #define COLOR_TO_R(color) ((color >> 24) & 0xFF)
 #define COLOR_TO_G(color) ((color >> 16) & 0xFF)
 #define COLOR_TO_B(color) ((color >> 8) & 0xFF)
@@ -57,10 +57,15 @@ auto value_to_colour(size_t value, size_t max_depth, bool deadend)
 
 using NodeList = std::vector<std::shared_ptr<const Node>>;
 
+constexpr float get_node_size(size_t max_depth, size_t node_depth) {
+    float max_depth_f = static_cast<float>(max_depth);
+    float node_depth_f = static_cast<float>(node_depth);
+    return 2.0F + ((max_depth_f - node_depth_f) * 4.0F / max_depth_f);
+}
+
 auto serialise_nodes(const NodeList& nodes, size_t max_depth)
     -> nlohmann::json {
     nlohmann::json out = nlohmann::json::array();
-    auto max_depth_f = static_cast<float>(max_depth);
     for (size_t id = 0; id < nodes.size(); ++id) {
         const auto& node_ptr = nodes[id];
         nlohmann::json node_json;
@@ -68,9 +73,7 @@ auto serialise_nodes(const NodeList& nodes, size_t max_depth)
         bool deadend = node_ptr->m_deadend && node_ptr->m_depth != max_depth;
         node_json["color"] =
             value_to_colour(node_ptr->m_depth, max_depth, deadend);
-        node_json["size"] =
-            1.0 + ((max_depth_f - static_cast<float>(node_ptr->m_depth)) * 4.0 /
-                   max_depth_f);
+        node_json["size"] = get_node_size(max_depth, node_ptr->m_depth);
         if (id == 0) {
             node_json["label"] = "Start";
             node_json["forceLabel"] = true;
