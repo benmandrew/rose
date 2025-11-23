@@ -122,8 +122,7 @@ auto graph_to_json(const Graph& graph, size_t max_depth) -> nlohmann::json {
     auto owner = it.owner();
     auto end = graph.end();
     for (; it != end; ++it) {
-        const auto& node_ptr = *it;
-        nodes.push_back(std::shared_ptr<const Node>(node_ptr));
+        nodes.push_back(*it);
     }
     nlohmann::json j;
     j["nodes"] = serialise_nodes(nodes, max_depth);
@@ -133,4 +132,13 @@ auto graph_to_json(const Graph& graph, size_t max_depth) -> nlohmann::json {
 
 auto graph_to_string(const Graph& graph, size_t max_depth) -> std::string {
     return graph_to_json(graph, max_depth).dump(2);
+}
+
+auto write_graph_to_file(const Graph& graph,
+                         const std::filesystem::path& outpath, size_t max_depth)
+    -> void {
+    std::ofstream file;
+    file.open(outpath);
+    file << graph_to_string(graph, max_depth);
+    file.close();
 }

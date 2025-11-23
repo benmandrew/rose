@@ -17,7 +17,8 @@ Edge::Edge(const Move& move, const std::shared_ptr<Node>& from,
     }
 }
 
-Graph::Graph(const Table& initial_table) : m_root(initial_table, 0) {}
+Graph::Graph(const Table& initial_table)
+    : m_root(std::make_shared<Node>(initial_table, 0)) {}
 
 auto Graph::generate_next_tables(DepthNodeQueue& node_queue,
                                  const std::shared_ptr<Node>& node,
@@ -26,11 +27,13 @@ auto Graph::generate_next_tables(DepthNodeQueue& node_queue,
     for (const auto& move : possible_moves) {
         Table new_table = node->m_table;
         new_table = apply_move(new_table, move);
-        if (m_seen_tables.contains(new_table)) {
+        if (auto search = m_seen_nodes.find(new_table);
+            search != m_seen_nodes.end()) {
+            node->m_edges.emplace_back(move, node, *search);
             continue;
         }
-        m_seen_tables.insert(new_table);
         auto new_node = std::make_shared<Node>(new_table, current_depth + 1);
+        m_seen_nodes.insert(new_node);
         node->m_edges.emplace_back(move, node, new_node);
         node_queue.emplace(current_depth + 1, new_node);
     }
@@ -38,11 +41,10 @@ auto Graph::generate_next_tables(DepthNodeQueue& node_queue,
 }
 
 auto Graph::generate(size_t depth) -> void {
-    m_seen_tables.insert(m_root.m_table);
+    m_seen_nodes.insert(m_root);
     DepthNodeQueue node_queue;
     size_t current_depth = 0;
-    std::shared_ptr<Node> root_ptr(&m_root, [](Node*) -> void {});
-    node_queue.emplace(current_depth, root_ptr);
+    node_queue.emplace(current_depth, m_root);
     while (!node_queue.empty()) {
         auto [current_depth, current_node] = node_queue.front();
         node_queue.pop();
@@ -54,10 +56,12 @@ auto Graph::generate(size_t depth) -> void {
     }
 }
 
-Graph::Iterator::Iterator(std::shared_ptr<Graph> graph_ptr,
-                          std::unique_ptr<NodeQueue> node_queue_ptr)
+Graph::Iterator::Iterator(
+    std::shared_ptr<Graph> graph_ptr, std::unique_ptr<NodeQueue> node_queue_ptr,
+    std::unique_ptr<std::set<std::shared_ptr<Node>, NodeComparator>> seen_nodes)
     : m_graph_ptr(std::move(graph_ptr)),
-      m_node_queue(std::move(node_queue_ptr)) {}
+      m_node_queue(std::move(node_queue_ptr)),
+      m_seen_nodes(std::move(seen_nodes)) {}
 
 Graph::Iterator::Iterator(const Iterator& other)
     : m_graph_ptr(other.m_graph_ptr) {
@@ -82,23 +86,37 @@ auto Graph::Iterator::operator=(const Iterator& other) -> Iterator& {
     } else {
         m_node_queue.reset();
     }
+    if (other.m_seen_nodes) {
+        m_seen_nodes =
+            std::make_unique<std::set<std::shared_ptr<Node>, NodeComparator>>(
+                *other.m_seen_nodes);
+    } else {
+        m_seen_nodes.reset();
+    }
     return *this;
 }
 
 auto Graph::Iterator::operator=(Iterator&& other) noexcept -> Iterator& {
     m_graph_ptr = std::move(other.m_graph_ptr);
     m_node_queue = std::move(other.m_node_queue);
+    m_seen_nodes = std::move(other.m_seen_nodes);
     return *this;
 }
 
 auto Graph::Iterator::operator++() -> Iterator& {
     if (!m_node_queue || m_node_queue->empty()) {
-        throw std::out_of_range("Iterator cannot be incremented past end");
+        m_node_queue.reset();
+        return *this;
     }
     value_type& current_node = m_node_queue->front();
+    m_seen_nodes->insert(current_node);
     m_node_queue->pop();
     for (const auto& edge : current_node->m_edges) {
         m_node_queue->emplace(edge.m_to);
+    }
+    while (!m_node_queue->empty() &&
+           m_seen_nodes->contains(m_node_queue->front())) {
+        m_node_queue->pop();
     }
     return *this;
 }

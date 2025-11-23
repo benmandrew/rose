@@ -12,8 +12,6 @@
 #include "serialise.hpp"
 #include "table.hpp"
 
-constexpr std::string_view graph_filename = "graph.json";
-
 auto make_random_table() -> Table {
     auto rng = std::make_optional<std::mt19937>(0);
     auto deck = random_deck(rng);
@@ -74,15 +72,6 @@ auto parse_args(int argc, char** argv) -> CmdArgs {
     return args;
 }
 
-auto write_graph_to_file(const Graph& graph,
-                         const std::filesystem::path& outpath, size_t max_depth)
-    -> void {
-    std::ofstream file;
-    file.open(outpath / graph_filename);
-    file << graph_to_string(graph, max_depth);
-    file.close();
-}
-
 auto make_table(std::optional<std::filesystem::path>& deck_path) -> Table {
     if (deck_path) {
         return Table(import_deck(*deck_path));
@@ -91,6 +80,7 @@ auto make_table(std::optional<std::filesystem::path>& deck_path) -> Table {
 }
 
 constexpr size_t max_depth = 10;
+constexpr std::string_view graph_filename = "graph.json";
 
 auto main(int argc, char** argv) -> int {
     std::cout << "Max depth: " << max_depth << "\n";
@@ -103,7 +93,7 @@ auto main(int argc, char** argv) -> int {
               << static_cast<double>(end_time - start_time) / 1000.0
               << " seconds\n";
     start_time = get_now();
-    write_graph_to_file(graph, parsed.out_dir, max_depth);
+    write_graph_to_file(graph, parsed.out_dir / graph_filename, max_depth);
     end_time = get_now();
     std::cout << fmt::format("Wrote {}/{} in ", parsed.out_dir.string(),
                              graph_filename)

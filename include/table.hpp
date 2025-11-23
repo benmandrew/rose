@@ -67,13 +67,6 @@ class [[gnu::packed]] Table {
         -> std::vector<std::vector<uint8_t>>;
 };
 
-class TableComparator {
-   public:
-    auto operator()(Table const& a, Table const& b) const -> bool {
-        return a.hash() < b.hash();
-    }
-};
-
 template <>
 struct std::hash<Table> {
     auto operator()(Table const& t) const noexcept -> std::size_t {
