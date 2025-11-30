@@ -106,16 +106,14 @@ auto main(int argc, char* argv[]) -> int {
     graph.generate_dfs();
     std::cout << "Completed DFS generation\n";
     graph.generate_bfs_on_existing(max_depth);
-    size_t end_time = get_now();
     std::cout << "Generated graph in "
-              << static_cast<double>(end_time - start_time) / 1000.0
+              << static_cast<double>(get_now() - start_time) / 1000.0
               << " seconds\n";
     start_time = get_now();
     write_graph_to_file(graph, parsed.out_dir / graph_filename, max_depth);
-    end_time = get_now();
     std::cout << fmt::format("Wrote {}/{} in ", parsed.out_dir.string(),
                              graph_filename)
-              << static_cast<double>(end_time - start_time) / 1000.0
+              << static_cast<double>(get_now() - start_time) / 1000.0
               << " seconds\n";
     return 0;
 }
