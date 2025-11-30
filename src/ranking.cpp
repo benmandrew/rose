@@ -43,7 +43,8 @@ auto tableau_to_foundation_value(const Table& table, size_t from_col)
     size_t value = foundation_rank_bonus(rank);
     if (n_visible == 1 &&
         table.m_tableau_hidden_indices[from_col] != c_null_index) {
-        value += REVEAL_BONUS;
+        value +=
+            REVEAL_BONUS + table.n_cards_in_hidden_tableau_column(from_col);
     }
     return value;
 }
@@ -53,7 +54,7 @@ auto tableau_to_tableau_value(const Table& table, size_t from_col,
     size_t n_visible = table.n_cards_in_visible_tableau_column(from_col);
     if (n_cards == n_visible &&
         table.m_tableau_hidden_indices[from_col] != c_null_index) {
-        return REVEAL_BONUS;
+        return REVEAL_BONUS + table.n_cards_in_hidden_tableau_column(from_col);
     }
     auto [_, rank] = index_to_card(
         static_cast<size_t>(table.m_tableau_visible_indices[from_col]));

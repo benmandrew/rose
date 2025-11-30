@@ -1,7 +1,6 @@
 #include "graph.hpp"
 
 #include <algorithm>
-#include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -69,14 +68,6 @@ auto Graph::generate_next_tables_dfs(NodeStack& node_stack,
               [&table = node->m_table](const Move& a, const Move& b) {
                   return compare_moves(a, b, table);
               });
-    // std::cout << node->m_table.to_string() << "\n";
-    // std::cout << "Possible moves";
-    // for (const auto& move : possible_moves) {
-    //     std::cout << " - " << move.to_string() << ":" << move_value(move,
-    //     node->m_table);
-    // }
-    // std::cout << "\n" << node_stack.size() << " nodes in stack, "
-    //             << m_seen_nodes.size() << " seen nodes\n";
     for (const auto& move : possible_moves) {
         Table new_table = node->m_table;
         new_table = apply_move(new_table, move);
