@@ -13,30 +13,21 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake clang-format ccache
+        sudo apt-get install -y build-essential cmake clang-format
     - name: Cache CMake dependencies (FetchContent)
       uses: actions/cache@v4
       with:
         path: build/_deps
-        # Include repository name to avoid cache collisions between repos and
-        # ensure the cache key is tied to the current repo layout.
         key: ${{ runner.os }}-cmake-deps-${{ github.repository }}-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
           ${{ runner.os }}-cmake-deps-${{ github.repository }}-
-    - name: Cache ccache
-      uses: actions/cache@v4
-      with:
-        path: ~/.ccache
-        key: ${{ runner.os }}-ccache-${{ hashFiles('**/*.cpp','**/*.hpp','**/*.h','**/CMakeLists.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-ccache-
-    - name: Check clang-format (if present)
+    - name: Check clang-format
       run: |
         echo "Running clang-format --dry-run"
         git ls-files '*.cpp' '*.h' '*.hpp' | xargs -r clang-format -style=file -n
     - name: Configure
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     - name: Build
       run: |
         cmake --build build -j

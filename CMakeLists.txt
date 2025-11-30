@@ -8,6 +8,7 @@ project(rose
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 string(APPEND CMAKE_CXX_FLAGS " -Wall")
 string(APPEND CMAKE_CXX_FLAGS " -Wbuiltin-macro-redefined")
@@ -23,18 +24,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g")
-
-find_program(_CCACHE_PROGRAM NAMES ccache)
-if(NOT _CCACHE_PROGRAM)
-    if(DEFINED CMAKE_C_COMPILER_LAUNCHER AND CMAKE_C_COMPILER_LAUNCHER)
-        message(WARNING "ccache requested as C compiler launcher but not found; unsetting CMAKE_C_COMPILER_LAUNCHER")
-        set(CMAKE_C_COMPILER_LAUNCHER "" CACHE STRING "" FORCE)
-    endif()
-    if(DEFINED CMAKE_CXX_COMPILER_LAUNCHER AND CMAKE_CXX_COMPILER_LAUNCHER)
-        message(WARNING "ccache requested as CXX compiler launcher but not found; unsetting CMAKE_CXX_COMPILER_LAUNCHER")
-        set(CMAKE_CXX_COMPILER_LAUNCHER "" CACHE STRING "" FORCE)
-    endif()
-endif()
 
 include(GNUInstallDirs)
 
@@ -112,27 +101,50 @@ else()
     add_custom_target(format COMMENT "clang-format not found on PATH")
 endif()
 
-find_program(CPPLINT NAMES cpplint cpplint.py PATHS /usr/bin /usr/local/bin /opt/homebrew/bin)
-if(CPPLINT)
-    file(GLOB_RECURSE LINT_SOURCE_FILES "src/*.cpp" "include/*.hpp" "tests/*.cpp")
-    if(LINT_SOURCE_FILES)
+file(GLOB_RECURSE LINT_SOURCE_FILES "src/*.cpp" "include/*.hpp" "tests/*.cpp")
+if(LINT_SOURCE_FILES)
+    find_program(CPPLINT NAMES cpplint cpplint.py PATHS /usr/bin /usr/local/bin /opt/homebrew/bin)
+    find_program(CPPCHECK NAMES cppcheck)
+
+    set(LINT_COMMANDS)
+    if(CPPLINT)
+        list(APPEND LINT_COMMANDS COMMAND ${CPPLINT} --linelength=80 --quiet ${LINT_SOURCE_FILES})
+    else()
+        message(WARNING "cpplint not found; skipping cpplint in lint target")
+    endif()
+
+    if(CPPCHECK)
+        list(APPEND LINT_COMMANDS COMMAND ${CPPCHECK}
+            --quiet
+            --enable=all
+            --check-level=exhaustive
+            --suppress=missingInclude
+            --suppress=missingIncludeSystem
+            --file-filter=src/*.cpp
+            --file-filter=include/*.hpp
+            --file-filter=tests/*.cpp
+            --inconclusive
+            --std=c++23
+            --language=c++
+            .)
+    else()
+        message(WARNING "cppcheck not found; skipping cppcheck in lint target")
+    endif()
+
+    if (LINT_COMMANDS)
         add_custom_target(lint
-            COMMAND ${CPPLINT} --linelength=80 --quiet ${LINT_SOURCE_FILES}
+            ${LINT_COMMANDS}
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMENT "Running cpplint on source files"
+            COMMENT "Running lint tools (cpplint, cppcheck)"
         )
     else()
-        message(STATUS "No source files found for cpplint")
-        add_custom_target(lint
-            COMMAND echo "No source files to lint"
-            COMMENT "Lint target (cpplint) disabled - no files found"
-        )
+        message(ERROR "No lint tools found; cannot create lint target")
     endif()
 else()
-    message(WARNING "cpplint not found, lint target will not be available")
+    message(STATUS "No source files found for cpplint")
     add_custom_target(lint
-        COMMAND echo "Lint not available - cpplint not found"
-        COMMENT "Lint target disabled"
+        COMMAND echo "No source files to lint"
+        COMMENT "Lint target (cpplint, cppcheck) disabled - no files found"
     )
 endif()
 

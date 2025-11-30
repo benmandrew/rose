@@ -47,8 +47,7 @@ auto Graph::generate_bfs(size_t depth) -> void {
         m_seen_nodes.insert(m_root);
     }
     DepthNodeQueue node_queue;
-    size_t current_depth = 0;
-    node_queue.emplace(current_depth, m_root);
+    node_queue.emplace(0, m_root);
     while (!node_queue.empty()) {
         auto [current_depth, current_node] = node_queue.front();
         node_queue.pop();

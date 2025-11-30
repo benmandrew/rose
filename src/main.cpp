@@ -17,7 +17,7 @@ auto make_random_table() -> Table {
     std::cout << "Using random seed: " << seed << "\n";
     auto rng = std::make_optional<std::mt19937>(seed);
     auto deck = random_deck(rng);
-    return {deck};
+    return Table(deck);
 }
 
 [[nodiscard]] auto get_now() -> size_t {

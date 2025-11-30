@@ -146,7 +146,7 @@ inline auto card_to_string(uint8_t card_index) -> std::string {
     if (card_index == c_null_index) {
         return std::string{c_no_card_string};
     }
-    assert(card_index >= 0 && card_index < static_cast<uint8_t>(c_num_cards));
+    assert(card_index < static_cast<uint8_t>(c_num_cards));
     auto [suit, rank] = index_to_card(static_cast<size_t>(card_index));
     return std::string{c_rank_strings[static_cast<size_t>(rank)]} +
            std::string{c_suit_strings[static_cast<size_t>(suit)]};
