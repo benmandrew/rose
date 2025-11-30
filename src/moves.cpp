@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "common.hpp"
+#include "table.hpp"
 
 [[nodiscard]] auto move_type_to_string(MoveType move_type) -> std::string {
     switch (move_type) {

@@ -4,6 +4,7 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <stack>
 #include <utility>
 #include <vector>
 
@@ -34,6 +35,7 @@ class Edge {
 
 using DepthNodeQueue = std::queue<std::pair<size_t, std::shared_ptr<Node>>>;
 using NodeQueue = std::queue<std::shared_ptr<Node>>;
+using NodeStack = std::stack<std::shared_ptr<Node>>;
 
 class NodeComparator {
    public:
@@ -57,14 +59,18 @@ class Graph {
     std::set<std::shared_ptr<Node>, NodeComparator> m_seen_nodes;
     std::shared_ptr<Node> m_root;
 
-    auto generate_next_tables(DepthNodeQueue& node_queue,
-                              const std::shared_ptr<Node>& node,
-                              size_t current_depth) -> DepthNodeQueue&;
+    auto generate_next_tables_bfs(DepthNodeQueue& node_queue,
+                                  const std::shared_ptr<Node>& node,
+                                  size_t current_depth) -> DepthNodeQueue&;
+    auto generate_next_tables_dfs(NodeStack& node_stack,
+                                  const std::shared_ptr<Node>& node,
+                                  size_t current_depth) -> NodeStack&;
 
    public:
     explicit Graph(const Table& initial_table);
     [[nodiscard]] auto get_root() const -> Node { return *m_root; }
-    auto generate(size_t depth = SIZE_MAX) -> void;
+    auto generate_bfs(size_t depth = SIZE_MAX) -> void;
+    auto generate_dfs() -> void;
 
     struct Iterator {
         Iterator(

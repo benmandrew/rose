@@ -1,8 +1,9 @@
 #include "graph.hpp"
 
+#include <iostream>
 #include <memory>
-#include <stdexcept>
 #include <utility>
+#include <vector>
 
 #include "table.hpp"
 
@@ -20,9 +21,9 @@ Edge::Edge(const Move& move, const std::shared_ptr<Node>& from,
 Graph::Graph(const Table& initial_table)
     : m_root(std::make_shared<Node>(initial_table, 0)) {}
 
-auto Graph::generate_next_tables(DepthNodeQueue& node_queue,
-                                 const std::shared_ptr<Node>& node,
-                                 size_t current_depth) -> DepthNodeQueue& {
+auto Graph::generate_next_tables_bfs(DepthNodeQueue& node_queue,
+                                     const std::shared_ptr<Node>& node,
+                                     size_t current_depth) -> DepthNodeQueue& {
     auto possible_moves = generate_moves(node->m_table);
     for (const auto& move : possible_moves) {
         Table new_table = node->m_table;
@@ -40,8 +41,10 @@ auto Graph::generate_next_tables(DepthNodeQueue& node_queue,
     return node_queue;
 }
 
-auto Graph::generate(size_t depth) -> void {
-    m_seen_nodes.insert(m_root);
+auto Graph::generate_bfs(size_t depth) -> void {
+    if (!m_seen_nodes.contains(m_root)) {
+        m_seen_nodes.insert(m_root);
+    }
     DepthNodeQueue node_queue;
     size_t current_depth = 0;
     node_queue.emplace(current_depth, m_root);
@@ -52,7 +55,53 @@ auto Graph::generate(size_t depth) -> void {
             break;
         }
         node_queue =
-            generate_next_tables(node_queue, current_node, current_depth);
+            generate_next_tables_bfs(node_queue, current_node, current_depth);
+    }
+}
+
+auto Graph::generate_next_tables_dfs(NodeStack& node_stack,
+                                     const std::shared_ptr<Node>& node,
+                                     size_t current_depth) -> NodeStack& {
+    auto possible_moves = generate_moves(node->m_table);
+    std::cout << node->m_table.to_string() << "\n";
+    std::cout << "Possible moves";
+    for (const auto& move : possible_moves) {
+        std::cout << " - " << move.to_string();
+    }
+    std::cout << "\n" << node_stack.size() << " nodes in stack, "
+                << m_seen_nodes.size() << " seen nodes\n";
+    for (const auto& move : possible_moves) {
+        Table new_table = node->m_table;
+        new_table = apply_move(new_table, move);
+        if (auto search = m_seen_nodes.find(new_table);
+            search != m_seen_nodes.end()) {
+            node->m_edges.emplace_back(move, node, *search);
+            continue;
+        }
+        auto new_node = std::make_shared<Node>(new_table, current_depth + 1);
+        m_seen_nodes.insert(new_node);
+        node->m_edges.emplace_back(move, node, new_node);
+        node_stack.push(new_node);
+    }
+    return node_stack;
+}
+
+auto Graph::generate_dfs() -> void {
+    if (!m_seen_nodes.contains(m_root)) {
+        m_seen_nodes.insert(m_root);
+    }
+    NodeStack node_stack;
+    node_stack.push(m_root);
+    size_t current_depth = 0;
+    while (!node_stack.empty()) {
+        auto current_node = node_stack.top();
+        node_stack.pop();
+        if (current_node->m_table.is_complete()) {
+            break;
+        }
+        generate_next_tables_dfs(node_stack, current_node, current_depth);
+        current_depth++;
+        int _ = getchar();
     }
 }
 

@@ -65,3 +65,5 @@ auto tableau_to_tableau(Table& table, size_t from_col, size_t to_col,
                         size_t n_cards) -> Table&;
 auto foundation_to_tableau(Table& table, Suit from_suit, size_t to_col)
     -> Table&;
+
+auto compare_moves(const Move& a, const Move& b) -> bool;

@@ -9,7 +9,7 @@ TEST_CASE("Graph to JSON", "[serialise]") {
     Table table(deck);
     Graph graph(table);
     constexpr size_t max_depth = 1;
-    graph.generate(max_depth);
+    graph.generate_bfs(max_depth);
     nlohmann::json graph_json = graph_to_json(graph, max_depth);
     REQUIRE(graph_json.contains("nodes"));
     REQUIRE(graph_json.contains("edges"));

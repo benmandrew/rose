@@ -89,7 +89,8 @@ auto main(int argc, char** argv) -> int {
     auto parsed = parse_args(argc, argv);
     auto graph = Graph(make_table(parsed.deck_file));
     size_t start_time = get_now();
-    graph.generate(max_depth);
+    // graph.generate_bfs(max_depth);
+    graph.generate_dfs();
     size_t end_time = get_now();
     std::cout << "Generated graph in "
               << static_cast<double>(end_time - start_time) / 1000.0

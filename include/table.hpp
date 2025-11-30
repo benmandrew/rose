@@ -51,6 +51,8 @@ class [[gnu::packed]] Table {
                                                 uint8_t card_index) const
         -> bool;
 
+    [[nodiscard]] auto is_complete() const -> bool;
+
     [[nodiscard]] auto hash() const -> std::size_t;
 
     [[nodiscard]] auto operator==(Table const& other) const -> bool {

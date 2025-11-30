@@ -7,7 +7,7 @@ TEST_CASE("Graph iterator", "[graph]") {
     auto deck = import_deck(res_dir / "random-deck.txt");
     Table table(deck);
     Graph graph(table);
-    graph.generate(2);
+    graph.generate_bfs(2);
     size_t count = 0;
     for (auto node : graph) {
         REQUIRE(node != nullptr);
@@ -23,7 +23,7 @@ TEST_CASE("Stock cycling loop", "[graph]") {
     table.m_deck[CARD("2♣")] = CARD("3♦");
     table.m_deck[CARD("3♦")] = c_null_index;
     Graph graph(table);
-    graph.generate(100);
+    graph.generate_bfs(100);
     size_t count = 0;
     for (auto node : graph) {
         REQUIRE(node != nullptr);

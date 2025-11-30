@@ -226,6 +226,21 @@ auto Table::can_be_placed_on_tableau(size_t to_col, uint8_t card_index) const
            (!suit_colours_equal(card_suit, tableau_suit));
 }
 
+auto Table::is_complete() const -> bool {
+    for (size_t suit = 0; suit < c_num_suits; suit++) {
+        uint8_t foundation_top = m_foundation_indices[suit];
+        if (foundation_top == c_null_index) {
+            return false;
+        }
+        auto [_, foundation_rank] =
+            index_to_card(static_cast<size_t>(foundation_top));
+        if (foundation_rank != c_num_cards_in_suit - 1) {
+            return false;
+        }
+    }
+    return true;
+}
+
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v) {
     std::hash<T> hasher;
