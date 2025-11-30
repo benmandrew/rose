@@ -167,10 +167,10 @@ TEST_CASE("Generate moves", "[moves]") {
         REQUIRE(moves.size() == 0);
     }
 
-    SECTION("Don't move kings between empty tableau columns") {
+    SECTION("Kings can move to empty tableau columns") {
         Table table;
         table.m_tableau_visible_indices[0] = CARD("K♠");
         auto moves = generate_moves(table, std::nullopt);
-        REQUIRE(moves.size() == 0);
+        REQUIRE(moves.size() == 6);
     }
 }

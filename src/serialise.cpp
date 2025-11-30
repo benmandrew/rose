@@ -14,6 +14,8 @@
 
 // #F5D547
 #define DEADEND_COLOR 0xF5D547FF
+// #4CAF50
+#define WINNING_COLOR 0x4CAF50FF
 // #1446A0
 #define START_COLOR 0x1446A0FF
 // #DB3069
@@ -24,6 +26,9 @@
 #define DEADEND_R COLOR_TO_R(DEADEND_COLOR)
 #define DEADEND_G COLOR_TO_G(DEADEND_COLOR)
 #define DEADEND_B COLOR_TO_B(DEADEND_COLOR)
+#define WINNING_R COLOR_TO_R(WINNING_COLOR)
+#define WINNING_G COLOR_TO_G(WINNING_COLOR)
+#define WINNING_B COLOR_TO_B(WINNING_COLOR)
 #define START_R COLOR_TO_R(START_COLOR)
 #define START_G COLOR_TO_G(START_COLOR)
 #define START_B COLOR_TO_B(START_COLOR)
@@ -37,13 +42,17 @@ auto lerp(uint8_t start, uint8_t end, float t) -> uint8_t {
     return static_cast<uint8_t>((start_f * (1.0F - t)) + (end_f * t));
 }
 
-auto value_to_colour(size_t value, size_t max_depth, bool deadend)
+auto value_to_colour(size_t value, size_t max_depth, bool deadend, bool winning)
     -> std::string {
     uint8_t r, g, b;
     if (deadend) {
         r = DEADEND_R;
         g = DEADEND_G;
         b = DEADEND_B;
+    } else if (winning) {
+        r = WINNING_R;
+        g = WINNING_G;
+        b = WINNING_B;
     } else {
         float t = static_cast<float>(value) / static_cast<float>(max_depth);
         r = lerp(START_R, END_R, t);
@@ -70,12 +79,18 @@ auto serialise_nodes(const NodeList& nodes, size_t max_depth)
         const auto& node_ptr = nodes[id];
         nlohmann::json node_json;
         node_json["id"] = id;
-        bool deadend = node_ptr->m_deadend && node_ptr->m_depth != max_depth;
+        // bool deadend = node_ptr->m_deadend && node_ptr->m_depth != max_depth;
+        bool deadend = false;
+        bool winning = node_ptr->m_table.is_complete();
         node_json["color"] =
-            value_to_colour(node_ptr->m_depth, max_depth, deadend);
-        node_json["size"] = get_node_size(max_depth, node_ptr->m_depth);
+            value_to_colour(node_ptr->m_depth, max_depth, deadend, winning);
+        // node_json["size"] = get_node_size(max_depth, node_ptr->m_depth);
+        node_json["size"] = 2.0F;
         if (id == 0) {
             node_json["label"] = "Start";
+            node_json["forceLabel"] = true;
+        } else if (winning) {
+            node_json["label"] = "Winning";
             node_json["forceLabel"] = true;
         }
         node_json["table"] = node_ptr->m_table.to_string();

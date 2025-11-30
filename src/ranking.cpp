@@ -1,6 +1,9 @@
 #include "ranking.hpp"
 
+#include "common.hpp"
+
 #define REVEAL_BONUS 20
+#define OPEN_COLUMN_BONUS 15
 #define HIGH_FOUNDATION_MAX_RANK 2
 #define MIDDLE_FOUNDATION_MAX_RANK 5
 #define HIGH_FOUNDATION_BONUS 50
@@ -17,7 +20,7 @@ auto foundation_rank_bonus(size_t rank) -> size_t {
 }
 
 auto stock_to_waste_value(const Table& table) -> size_t {
-    if (table.m_stock_index == c_null_index) {
+    if (table.m_stock_index == c_null_index && table.n_cards_in_waste() <= 1) {
         return 0;
     }
     return 1;
@@ -51,6 +54,11 @@ auto tableau_to_tableau_value(const Table& table, size_t from_col,
     if (n_cards == n_visible &&
         table.m_tableau_hidden_indices[from_col] != c_null_index) {
         return REVEAL_BONUS;
+    }
+    auto [_, rank] = index_to_card(
+        static_cast<size_t>(table.m_tableau_visible_indices[from_col]));
+    if (n_cards == n_visible && rank != c_num_cards_in_suit - n_cards) {
+        return OPEN_COLUMN_BONUS;
     }
     return 0;
 }

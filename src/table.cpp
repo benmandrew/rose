@@ -31,6 +31,24 @@ Table::Table(const std::array<uint8_t, c_num_cards>& deck) {
     }
 }
 
+auto Table::n_cards_in_stock() const -> size_t {
+    size_t count = 0;
+    for (uint8_t idx = m_stock_index; idx != c_null_index;
+         idx = m_deck[static_cast<size_t>(idx)]) {
+        count++;
+    }
+    return count;
+}
+
+auto Table::n_cards_in_waste() const -> size_t {
+    size_t count = 0;
+    for (uint8_t idx = m_waste_index; idx != c_null_index;
+         idx = m_deck[static_cast<size_t>(idx)]) {
+        count++;
+    }
+    return count;
+}
+
 auto Table::n_cards_in_visible_tableau_column(size_t col_idx) const -> size_t {
     assert(col_idx < c_tableau_columns);
     size_t count = 0;

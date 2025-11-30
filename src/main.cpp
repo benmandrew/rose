@@ -81,16 +81,16 @@ auto make_table(std::optional<std::filesystem::path>& deck_path) -> Table {
     return make_random_table();
 }
 
-constexpr size_t max_depth = 20;
+// constexpr size_t max_depth = 20;
 constexpr std::string_view graph_filename = "graph.json";
 
 auto main(int argc, char** argv) -> int {
-    std::cout << "Max depth: " << max_depth << "\n";
+    // std::cout << "Max depth: " << max_depth << "\n";
     auto parsed = parse_args(argc, argv);
     auto graph = Graph(make_table(parsed.deck_file));
     size_t start_time = get_now();
     // graph.generate_bfs(max_depth);
-    graph.generate_dfs();
+    size_t max_depth = graph.generate_dfs();
     size_t end_time = get_now();
     std::cout << "Generated graph in "
               << static_cast<double>(end_time - start_time) / 1000.0

@@ -193,11 +193,7 @@ auto generate_tableau_to_tableau_moves(const Table& table,
                 if (to_col == from_col) {
                     continue;
                 }
-                auto [_, moving_rank] =
-                    index_to_card(static_cast<size_t>(moving_card));
-                if (table.can_be_placed_on_tableau(to_col, moving_card) &&
-                    (moving_rank != c_num_cards_in_suit - 1 ||
-                     table.m_tableau_hidden_indices[to_col] != c_null_index)) {
+                if (table.can_be_placed_on_tableau(to_col, moving_card)) {
                     moves.push_back(Move::create_tableau_to_tableau(
                         from_col, to_col, n_cards));
                 }

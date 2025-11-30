@@ -1,10 +1,12 @@
 #include "graph.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "ranking.hpp"
 #include "table.hpp"
 
 Node::Node(const Table& table, size_t depth)
@@ -63,13 +65,18 @@ auto Graph::generate_next_tables_dfs(NodeStack& node_stack,
                                      const std::shared_ptr<Node>& node,
                                      size_t current_depth) -> NodeStack& {
     auto possible_moves = generate_moves(node->m_table);
-    std::cout << node->m_table.to_string() << "\n";
-    std::cout << "Possible moves";
-    for (const auto& move : possible_moves) {
-        std::cout << " - " << move.to_string();
-    }
-    std::cout << "\n" << node_stack.size() << " nodes in stack, "
-                << m_seen_nodes.size() << " seen nodes\n";
+    std::sort(possible_moves.begin(), possible_moves.end(),
+              [&table = node->m_table](const Move& a, const Move& b) {
+                  return compare_moves(a, b, table);
+              });
+    // std::cout << node->m_table.to_string() << "\n";
+    // std::cout << "Possible moves";
+    // for (const auto& move : possible_moves) {
+    //     std::cout << " - " << move.to_string() << ":" << move_value(move,
+    //     node->m_table);
+    // }
+    // std::cout << "\n" << node_stack.size() << " nodes in stack, "
+    //             << m_seen_nodes.size() << " seen nodes\n";
     for (const auto& move : possible_moves) {
         Table new_table = node->m_table;
         new_table = apply_move(new_table, move);
@@ -86,23 +93,25 @@ auto Graph::generate_next_tables_dfs(NodeStack& node_stack,
     return node_stack;
 }
 
-auto Graph::generate_dfs() -> void {
+auto Graph::generate_dfs() -> size_t {
     if (!m_seen_nodes.contains(m_root)) {
         m_seen_nodes.insert(m_root);
     }
     NodeStack node_stack;
     node_stack.push(m_root);
-    size_t current_depth = 0;
+    size_t deepest_depth = 0;
     while (!node_stack.empty()) {
         auto current_node = node_stack.top();
         node_stack.pop();
         if (current_node->m_table.is_complete()) {
             break;
         }
-        generate_next_tables_dfs(node_stack, current_node, current_depth);
-        current_depth++;
-        int _ = getchar();
+        deepest_depth = std::max(deepest_depth, current_node->m_depth);
+        generate_next_tables_dfs(node_stack, current_node,
+                                 current_node->m_depth);
+        // int _ = getchar();
     }
+    return deepest_depth;
 }
 
 Graph::Iterator::Iterator(

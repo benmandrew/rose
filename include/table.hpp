@@ -25,6 +25,8 @@ class [[gnu::packed]] Table {
     }
     Table(const std::array<uint8_t, c_num_cards>& deck);
 
+    [[nodiscard]] auto n_cards_in_stock() const -> size_t;
+    [[nodiscard]] auto n_cards_in_waste() const -> size_t;
     [[nodiscard]] auto n_cards_in_visible_tableau_column(size_t col_idx) const
         -> size_t;
     [[nodiscard]] auto n_cards_in_hidden_tableau_column(size_t col_idx) const
