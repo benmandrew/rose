@@ -30,12 +30,16 @@ auto make_random_table() -> Table {
 struct CmdArgs {
     std::filesystem::path out_dir;
     std::optional<std::filesystem::path> deck_file;
+    std::optional<size_t> max_depth;
 };
+
+#define USAGE_MSG                                            \
+    "Usage: rose [--deck <deckfile>] [--max-depth <depth>] " \
+    "<graph_output_directory>\n"
 
 auto parse_args(int argc, char** argv) -> CmdArgs {
     if (argc < 2) {
-        std::cerr
-            << "Usage: rose [--deck <deckfile>] <graph_output_directory>\n";
+        std::cerr << USAGE_MSG;
         exit(1);
     }
     CmdArgs args;
@@ -50,10 +54,18 @@ auto parse_args(int argc, char** argv) -> CmdArgs {
             args.deck_file = std::filesystem::path(argv[++i]);
         } else if (a.rfind("--deck=", 0) == 0) {
             args.deck_file = std::filesystem::path(std::string(a.substr(7)));
+        } else if (a == "--max-depth") {
+            if (i + 1 >= argc) {
+                std::cerr << "--max-depth requires a depth value\n";
+                exit(1);
+            }
+            args.max_depth = static_cast<size_t>(std::stoul(argv[++i]));
+        } else if (a.rfind("--max-depth=", 0) == 0) {
+            args.max_depth =
+                static_cast<size_t>(std::stoul(std::string(a.substr(12))));
         } else if (a.rfind("--", 0) == 0) {
             std::cerr << "Unknown option: " << a << "\n";
-            std::cerr
-                << "Usage: rose [--deck <deckfile>] <graph_output_directory>\n";
+            std::cerr << USAGE_MSG;
             exit(1);
         } else {
             positionals.emplace_back(argv[i]);
@@ -81,15 +93,18 @@ auto make_table(std::optional<std::filesystem::path>& deck_path) -> Table {
     return make_random_table();
 }
 
-constexpr size_t max_depth = 10;
+constexpr size_t max_depth_default = 5;
 constexpr std::string_view graph_filename = "graph.json";
 
-auto main(int argc, char** argv) -> int {
-    std::cout << "Max depth: " << max_depth << "\n";
+auto main(int argc, char* argv[]) -> int {
     auto parsed = parse_args(argc, argv);
+    size_t max_depth =
+        parsed.max_depth.value_or(static_cast<size_t>(max_depth_default));
+    std::cout << "Max depth: " << max_depth << "\n";
     auto graph = Graph(make_table(parsed.deck_file));
     size_t start_time = get_now();
     graph.generate_dfs();
+    std::cout << "Completed DFS generation\n";
     graph.generate_bfs_on_existing(max_depth);
     size_t end_time = get_now();
     std::cout << "Generated graph in "
