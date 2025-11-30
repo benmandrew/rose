@@ -70,7 +70,8 @@ class Graph {
     explicit Graph(const Table& initial_table);
     [[nodiscard]] auto get_root() const -> Node { return *m_root; }
     auto generate_bfs(size_t depth = SIZE_MAX) -> void;
-    auto generate_dfs() -> size_t;
+    auto generate_bfs_on_existing(size_t depth = SIZE_MAX) -> void;
+    auto generate_dfs() -> void;
 
     struct Iterator {
         Iterator(

@@ -40,6 +40,7 @@ struct Move {
     [[nodiscard]] auto to_string() const -> std::string;
     [[nodiscard]] auto to_json() const -> nlohmann::json;
     [[nodiscard]] auto is_opposite(const Move& other) const -> bool;
+    [[nodiscard]] auto operator==(const Move& other) const -> bool;
 
     static auto create_stock_to_waste() -> Move;
     static auto create_waste_to_foundation() -> Move;

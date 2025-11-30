@@ -120,6 +120,7 @@ if(LINT_SOURCE_FILES)
             --check-level=exhaustive
             --suppress=missingInclude
             --suppress=missingIncludeSystem
+            --suppress=checkersReport
             --file-filter=src/*.cpp
             --file-filter=include/*.hpp
             --file-filter=tests/*.cpp

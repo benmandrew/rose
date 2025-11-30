@@ -104,6 +104,30 @@ auto Move::is_opposite(const Move& other) const -> bool {
     }
 }
 
+auto Move::operator==(const Move& other) const -> bool {
+    if (m_type != other.m_type) {
+        return false;
+    }
+    switch (m_type) {
+        case MoveType::StockToWaste:
+        case MoveType::WasteToFoundation:
+            return true;
+        case MoveType::WasteToTableau:
+            return mv.wt.m_to_col == other.mv.wt.m_to_col;
+        case MoveType::TableauToFoundation:
+            return mv.tf.m_from_col == other.mv.tf.m_from_col;
+        case MoveType::TableauToTableau:
+            return mv.tt.m_from_col == other.mv.tt.m_from_col &&
+                   mv.tt.m_to_col == other.mv.tt.m_to_col &&
+                   mv.tt.m_n_cards == other.mv.tt.m_n_cards;
+        case MoveType::FoundationToTableau:
+            return mv.ft.m_from_suit == other.mv.ft.m_from_suit &&
+                   mv.ft.m_to_col == other.mv.ft.m_to_col;
+        default:
+            throw std::invalid_argument("Invalid move type");
+    }
+}
+
 auto Move::create_stock_to_waste() -> Move {
     return Move{.m_type = MoveType::StockToWaste, .mv = {}};
 }
