@@ -20,4 +20,4 @@ WORKDIR /app
 COPY --from=builder /build/rose ./rose
 RUN mkdir -p /app/shared && chmod 755 /app
 VOLUME ["/app/shared"]
-ENTRYPOINT ["sh", "-c", "/app/rose /app/shared && tail -F /dev/null"]
+ENTRYPOINT ["sh", "-c", "/app/rose --max-depth 15 --timeout 0.5 /app/shared && tail -F /dev/null"]
