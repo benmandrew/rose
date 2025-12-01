@@ -12,10 +12,19 @@ docker compose up
 
 Access the web app on http://localhost:8080.
 
+## Build locally
+
+Depends on:
+- `cmake`
+- `npm`
+
 ### Build
 
 ```bash
-cmake --build . -j
+$ mkdir build
+$ cd build
+$ cmake ..
+$ cmake --build .
 ```
 
 ### Run Tests
@@ -30,7 +39,7 @@ cmake --build . --target tests
 cmake --build . --target lint
 ```
 
-(Requires `clang-tidy`.)
+(Requires `cpplint` and `cppcheck`.)
 
 ### Format
 
