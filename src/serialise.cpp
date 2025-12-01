@@ -42,14 +42,10 @@ auto lerp(uint8_t start, uint8_t end, float t) -> uint8_t {
     return static_cast<uint8_t>((start_f * (1.0F - t)) + (end_f * t));
 }
 
-auto value_to_colour(size_t value, size_t max_depth, bool deadend, bool winning)
+auto value_to_colour(size_t value, size_t max_depth, bool winning)
     -> std::string {
     uint8_t r, g, b;
-    if (deadend) {
-        r = DEADEND_R;
-        g = DEADEND_G;
-        b = DEADEND_B;
-    } else if (winning) {
+    if (winning) {
         r = WINNING_R;
         g = WINNING_G;
         b = WINNING_B;
@@ -83,12 +79,12 @@ auto serialise_nodes(const NodeList& nodes, size_t max_depth)
         const auto& node_ptr = nodes[id];
         nlohmann::json node_json;
         node_json["id"] = id;
-        // bool deadend = node_ptr->m_deadend && node_ptr->m_depth != max_depth;
-        bool deadend = false;
         bool winning = node_ptr->m_table.is_complete();
         node_json["color"] =
-            value_to_colour(node_ptr->m_depth, max_depth, deadend, winning);
-        node_json["size"] = get_node_size(max_depth, node_ptr->m_depth);
+            value_to_colour(node_ptr->m_depth, max_depth, winning);
+        std::array<char, 10> buffer;
+        std::snprintf(buffer.data(), buffer.size(), "%f", get_node_size(max_depth, node_ptr->m_depth));
+        node_json["size"] = {buffer.data()};
         if (id == 0) {
             node_json["label"] = "Start";
             node_json["forceLabel"] = true;
