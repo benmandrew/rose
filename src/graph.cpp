@@ -1,6 +1,7 @@
 #include "graph.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -47,38 +48,74 @@ auto Graph::generate_next_tables_bfs(DepthNodeQueue& node_queue,
     return node_queue;
 }
 
-auto Graph::generate_bfs(size_t depth) -> void {
+#define TIMEOUT_CHECK_FREQUENCY 500
+
+auto Graph::generate_bfs(size_t depth, std::optional<float> timeout) -> size_t {
     if (!m_seen_nodes.contains(m_root)) {
         m_seen_nodes.insert(m_root);
     }
     DepthNodeQueue node_queue;
     node_queue.emplace(0, m_root);
+    size_t iteration = 0;
+    size_t max_depth_found = 0;
+    size_t start_time = get_now();
     while (!node_queue.empty()) {
         auto [current_depth, current_node] = node_queue.front();
         node_queue.pop();
+        if (current_depth > max_depth_found) {
+            max_depth_found = current_depth;
+        }
+        if (timeout && iteration % TIMEOUT_CHECK_FREQUENCY == 0) {
+            size_t elapsed = get_now() - start_time;
+            if (elapsed >= static_cast<size_t>(*timeout * 1000)) {
+                std::cout << "Timeout reached after "
+                          << static_cast<double>(elapsed) / 1000.0
+                          << " seconds\n";
+                return max_depth_found;
+            }
+        }
         if (current_depth >= depth) {
             break;
         }
         node_queue =
             generate_next_tables_bfs(node_queue, current_node, current_depth);
+        iteration++;
     }
+    return max_depth_found;
 }
 
-auto Graph::generate_bfs_on_existing(size_t depth) -> void {
+auto Graph::generate_bfs_on_existing(size_t depth, std::optional<float> timeout)
+    -> size_t {
     DepthNodeQueue node_queue;
     for (const auto& node_ptr : m_seen_nodes) {
         node_queue.emplace(node_ptr->m_depth, node_ptr);
     }
+    size_t iteration = 0;
+    size_t max_depth_found = 0;
+    size_t start_time = get_now();
     while (!node_queue.empty()) {
         auto [current_depth, current_node] = node_queue.front();
-        // std::cout << "Processing node at depth " << current_depth << "\n";
         node_queue.pop();
+        if (current_depth > max_depth_found) {
+            max_depth_found = current_depth;
+        }
+        if (timeout && iteration % TIMEOUT_CHECK_FREQUENCY == 0) {
+            size_t elapsed = get_now() - start_time;
+            if (elapsed >= static_cast<size_t>(*timeout * 1000)) {
+                std::cout << "Timeout reached after "
+                          << static_cast<double>(elapsed) / 1000.0
+                          << " seconds\n";
+                return max_depth_found;
+            }
+        }
         if (current_depth >= depth) {
             break;
         }
         node_queue =
             generate_next_tables_bfs(node_queue, current_node, current_depth);
+        iteration++;
     }
+    return max_depth_found;
 }
 
 auto Graph::generate_next_tables_dfs(NodeStack& node_stack,
@@ -89,7 +126,6 @@ auto Graph::generate_next_tables_dfs(NodeStack& node_stack,
               [&table = node->m_table](const Move& a, const Move& b) {
                   return compare_moves(a, b, table);
               });
-    // for (const auto& move : possible_moves) {
     Table new_table = node->m_table;
     new_table = apply_move(new_table, possible_moves.back());
     if (auto search = m_seen_nodes.find(new_table);
@@ -101,7 +137,6 @@ auto Graph::generate_next_tables_dfs(NodeStack& node_stack,
     m_seen_nodes.insert(new_node);
     node->m_edges.emplace_back(possible_moves.back(), node, new_node);
     node_stack.push(new_node);
-    // }
     return node_stack;
 }
 

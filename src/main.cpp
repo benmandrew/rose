@@ -1,7 +1,6 @@
 #include <fmt/format.h>
 #include <unistd.h>
 
-#include <chrono>
 #include <filesystem>  // NOLINT(build/c++17)
 #include <iostream>
 #include <optional>
@@ -20,22 +19,16 @@ auto make_random_table() -> Table {
     return Table(deck);
 }
 
-[[nodiscard]] auto get_now() -> size_t {
-    return static_cast<size_t>(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now().time_since_epoch())
-            .count());
-}
-
 struct CmdArgs {
     std::filesystem::path out_dir;
     std::optional<std::filesystem::path> deck_file;
     std::optional<size_t> max_depth;
+    std::optional<float> timeout;
 };
 
 #define USAGE_MSG                                            \
     "Usage: rose [--deck <deckfile>] [--max-depth <depth>] " \
-    "<graph_output_directory>\n"
+    "[--timeout <timeout>] <graph_output_directory>\n"
 
 auto parse_args(int argc, char** argv) -> CmdArgs {
     if (argc < 2) {
@@ -63,6 +56,15 @@ auto parse_args(int argc, char** argv) -> CmdArgs {
         } else if (a.rfind("--max-depth=", 0) == 0) {
             args.max_depth =
                 static_cast<size_t>(std::stoul(std::string(a.substr(12))));
+        } else if (a == "--timeout") {
+            if (i + 1 >= argc) {
+                std::cerr << "--timeout requires a timeout value\n";
+                exit(1);
+            }
+            args.timeout = static_cast<float>(std::stof(argv[++i]));
+        } else if (a.rfind("--timeout=", 0) == 0) {
+            args.timeout =
+                static_cast<float>(std::stof(std::string(a.substr(10))));
         } else if (a.rfind("--", 0) == 0) {
             std::cerr << "Unknown option: " << a << "\n";
             std::cerr << USAGE_MSG;
@@ -105,12 +107,14 @@ auto main(int argc, char* argv[]) -> int {
     size_t start_time = get_now();
     graph.generate_dfs();
     std::cout << "Completed DFS generation\n";
-    graph.generate_bfs_on_existing(max_depth);
+    size_t generated_depth =
+        graph.generate_bfs_on_existing(max_depth, parsed.timeout);
     std::cout << "Generated graph in "
               << static_cast<double>(get_now() - start_time) / 1000.0
               << " seconds\n";
     start_time = get_now();
-    write_graph_to_file(graph, parsed.out_dir / graph_filename, max_depth);
+    write_graph_to_file(graph, parsed.out_dir / graph_filename,
+                        generated_depth + 1);
     std::cout << fmt::format("Wrote {}/{} in ", parsed.out_dir.string(),
                              graph_filename)
               << static_cast<double>(get_now() - start_time) / 1000.0

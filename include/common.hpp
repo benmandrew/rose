@@ -173,3 +173,10 @@ inline auto import_deck(const std::filesystem::path& deck_path)
     }
     return deck;
 }
+
+[[nodiscard]] inline auto get_now() -> size_t {
+    return static_cast<size_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch())
+            .count());
+}

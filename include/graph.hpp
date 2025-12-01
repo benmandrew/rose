@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <queue>
@@ -69,8 +70,11 @@ class Graph {
    public:
     explicit Graph(const Table& initial_table);
     [[nodiscard]] auto get_root() const -> Node { return *m_root; }
-    auto generate_bfs(size_t depth = SIZE_MAX) -> void;
-    auto generate_bfs_on_existing(size_t depth = SIZE_MAX) -> void;
+    auto generate_bfs(size_t depth = SIZE_MAX,
+                      std::optional<float> timeout = std::nullopt) -> size_t;
+    auto generate_bfs_on_existing(size_t depth = SIZE_MAX,
+                                  std::optional<float> timeout = std::nullopt)
+        -> size_t;
     auto generate_dfs() -> void;
 
     struct Iterator {

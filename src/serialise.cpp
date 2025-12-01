@@ -66,10 +66,14 @@ auto value_to_colour(size_t value, size_t max_depth, bool deadend, bool winning)
 
 using NodeList = std::vector<std::shared_ptr<const Node>>;
 
+#define NODE_MIN_SIZE 1.0F
+#define NODE_MAX_SIZE 4.0F
+
 constexpr float get_node_size(size_t max_depth, size_t node_depth) {
     float max_depth_f = static_cast<float>(max_depth);
     float node_depth_f = static_cast<float>(node_depth);
-    return 2.0F + ((max_depth_f - node_depth_f) * 4.0F / max_depth_f);
+    return NODE_MIN_SIZE + ((max_depth_f - node_depth_f) *
+                            (NODE_MAX_SIZE - NODE_MIN_SIZE) / max_depth_f);
 }
 
 auto serialise_nodes(const NodeList& nodes, size_t max_depth)
@@ -126,6 +130,7 @@ auto serialise_edges(const NodeList& nodes) -> nlohmann::json {
             edge_json["target"] = it->second;
             edge_json["type"] = "arrow";
             edge_json["label"] = move_type_to_string(edge.m_move.m_type);
+            edge_json["size"] = 1;
             edges.push_back(edge_json);
         }
     }
