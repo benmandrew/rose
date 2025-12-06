@@ -5,6 +5,7 @@ import Sigma from "sigma";
 
 const container = document.getElementById("graph");
 const tableView = document.getElementById("tableView");
+const layoutToggleBtn = document.getElementById("layoutToggleBtn");
 
 function resize() {
   container.style.width = `${window.innerWidth - 320}px`;
@@ -14,6 +15,13 @@ window.addEventListener("resize", resize);
 resize();
 
 let renderer = null;
+let currentGraph = null;
+let layout = null;
+
+const layoutSettings = {
+  gravity: 1,
+  barnesHutOptimize: true,
+};
 
 async function loadGraph(path) {
   try {
@@ -40,24 +48,39 @@ function resetRenderer(renderer) {
   return null;
 }
 
-let layout = null;
-
-function setNodeCoordinates(g) {
-  circular.assign(g);
-  const settings = {
-    gravity: 1,
-    barnesHutOptimize: true,
-  };
+function createLayout(g) {
   if (layout && typeof layout.kill === "function") {
     try {
       layout.kill();
     } catch (_e) {}
   }
-  layout = new ForceAtlas2(g, { settings });
+  layout = new ForceAtlas2(g, { settings: layoutSettings });
+}
+
+function startLayout() {
+  if (!currentGraph) return;
+  if (!layout) {
+    createLayout(currentGraph);
+  }
   if (layout && typeof layout.start === "function") {
     layout.start();
-    console.log("ForceAtlas2 layout started");
+    layoutToggleBtn.textContent = "Stop layout";
   }
+}
+
+function stopLayout() {
+  if (layout && typeof layout.stop === "function") {
+    try {
+      layout.stop();
+    } catch (_e) {}
+    layoutToggleBtn.textContent = "Start layout";
+  }
+}
+
+function setNodeCoordinates(g) {
+  circular.assign(g);
+  createLayout(g);
+  startLayout();
 }
 
 function jsonToGraph(json) {
@@ -96,9 +119,29 @@ async function loadAndRender(path = "graph.json") {
   renderer = resetRenderer(renderer);
   if (!Graph) throw new Error("graphology not available");
   if (!Sigma) throw new Error("Sigma module not available");
-  const g = jsonToGraph(graph);
-  setNodeCoordinates(g);
-  initRenderer(g);
+  currentGraph = jsonToGraph(graph);
+  setNodeCoordinates(currentGraph);
+  initRenderer(currentGraph);
+  layoutToggleBtn.textContent = "Stop layout";
 }
 
 loadAndRender();
+
+layoutToggleBtn.addEventListener("click", () => {
+  if (layout && typeof layout.isRunning === "function" && layout.isRunning()) {
+    stopLayout();
+  } else {
+    startLayout();
+  }
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.code === "Space" || event.key === " ") {
+    event.preventDefault();
+    if (layout && typeof layout.isRunning === "function" && layout.isRunning()) {
+      stopLayout();
+    } else {
+      startLayout();
+    }
+  }
+});
