@@ -7,10 +7,18 @@ find_program(NPM_EXECUTABLE npm)
 if(NPM_EXECUTABLE)
     message(STATUS "Found npm: ${NPM_EXECUTABLE}")
 
-    add_custom_target(web_install_deps
-        COMMAND ${NPM_EXECUTABLE} ci --quiet
+    set(NPM_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/node_modules/.npm-ci.stamp")
+    add_custom_command(
+        OUTPUT ${NPM_STAMP}
+        COMMAND ${NPM_EXECUTABLE} ci --quiet --no-fund
+        COMMAND ${CMAKE_COMMAND} -E touch ${NPM_STAMP}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/package-lock.json
+            ${CMAKE_CURRENT_SOURCE_DIR}/package.json
         COMMENT "Installing web dependencies (npm ci)")
+
+    add_custom_target(web_install_deps
+        DEPENDS ${NPM_STAMP})
 
     add_custom_target(web_build
         COMMAND ${NPM_EXECUTABLE} run build --quiet
