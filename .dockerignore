@@ -1,24 +1,9 @@
-.git
-.gitignore
+*
 
-# CMake / build artifacts
-build/
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-compile_commands.json
-CTestTestfile.cmake
-*.o
-*.obj
-*.a
-*.so
-*.dylib
-*.exe
-
-.vscode/
-.DS_Store
-Thumbs.db
+!src
+!include
+!web
+!CMakeLists.txt
 
 web/node_modules/
 web/build/
