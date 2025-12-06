@@ -11,6 +11,7 @@ services:
     environment:
       BFS_MAX_DEPTH: "${BFS_MAX_DEPTH:-100}"
       BFS_TIMEOUT_S: "${BFS_TIMEOUT_S:-0.05}"
+      WITH_DFS: "${WITH_DFS:-false}"
     restart: "no"
     init: true
     healthcheck:

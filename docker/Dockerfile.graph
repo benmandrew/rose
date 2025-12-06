@@ -20,4 +20,4 @@ WORKDIR /app
 COPY --from=builder /build/rose ./rose
 RUN mkdir -p /app/shared && chmod 755 /app
 VOLUME ["/app/shared"]
-ENTRYPOINT ["sh", "-c", "/app/rose --max-depth ${BFS_MAX_DEPTH:-5} --timeout ${BFS_TIMEOUT_S:-0.1} /app/shared && tail -F /dev/null"]
+ENTRYPOINT ["sh", "-c", "if [ \"${WITH_DFS:-false}\" = \"true\" ]; then DFS_FLAG=--with-dfs; else DFS_FLAG=; fi; /app/rose ${DFS_FLAG} --max-depth ${BFS_MAX_DEPTH:-5} --timeout ${BFS_TIMEOUT_S:-0.1} /app/shared && tail -F /dev/null"]

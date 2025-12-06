@@ -1,6 +1,7 @@
 #include <fmt/format.h>
 #include <unistd.h>
 
+#include <cstddef>
 #include <filesystem>  // NOLINT(build/c++17)
 #include <iostream>
 #include <optional>
@@ -24,11 +25,12 @@ struct CmdArgs {
     std::optional<std::filesystem::path> deck_file;
     std::optional<size_t> max_depth;
     std::optional<float> timeout;
+    bool with_dfs{false};
 };
 
 #define USAGE_MSG                                            \
     "Usage: rose [--deck <deckfile>] [--max-depth <depth>] " \
-    "[--timeout <timeout>] <graph_output_directory>\n"
+    "[--timeout <timeout>] [--with-dfs] <graph_output_directory>\n"
 
 auto parse_args(int argc, char** argv) -> CmdArgs {
     if (argc < 2) {
@@ -65,6 +67,8 @@ auto parse_args(int argc, char** argv) -> CmdArgs {
         } else if (a.rfind("--timeout=", 0) == 0) {
             args.timeout =
                 static_cast<float>(std::stof(std::string(a.substr(10))));
+        } else if (a == "--with-dfs") {
+            args.with_dfs = true;
         } else if (a.rfind("--", 0) == 0) {
             std::cerr << "Unknown option: " << a << "\n";
             std::cerr << USAGE_MSG;
@@ -105,10 +109,15 @@ auto main(int argc, char* argv[]) -> int {
     std::cout << "Max depth: " << max_depth << "\n";
     auto graph = Graph(make_table(parsed.deck_file));
     size_t start_time = get_now();
-    graph.generate_dfs();
-    std::cout << "Completed DFS generation\n";
-    size_t generated_depth =
-        graph.generate_bfs_on_existing(max_depth, parsed.timeout);
+    size_t generated_depth = 0;
+    if (parsed.with_dfs) {
+        graph.generate_dfs();
+        std::cout << "Completed DFS generation\n";
+        generated_depth =
+            graph.generate_bfs_on_existing(max_depth, parsed.timeout);
+    } else {
+        generated_depth = graph.generate_bfs(max_depth, parsed.timeout);
+    }
     std::cout << "Generated graph in "
               << static_cast<double>(get_now() - start_time) / 1000.0
               << " seconds\n";
