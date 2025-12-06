@@ -83,7 +83,8 @@ auto serialise_nodes(const NodeList& nodes, size_t max_depth)
         node_json["color"] =
             value_to_colour(node_ptr->m_depth, max_depth, winning);
         std::array<char, 10> buffer;
-        std::snprintf(buffer.data(), buffer.size(), "%f", get_node_size(max_depth, node_ptr->m_depth));
+        std::snprintf(buffer.data(), buffer.size(), "%f",
+                      get_node_size(max_depth, node_ptr->m_depth));
         node_json["size"] = {buffer.data()};
         if (id == 0) {
             node_json["label"] = "Start";
