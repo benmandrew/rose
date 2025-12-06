@@ -11,8 +11,8 @@ RUN set -eux; \
 
 ENV CC=clang-18
 ENV CXX=clang++-18
-COPY . .
-RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+COPY --exclude=web . .
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_WEB=OFF
 RUN cmake --build build -j$(nproc)
 
 FROM debian:bookworm-slim

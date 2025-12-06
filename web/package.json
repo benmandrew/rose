@@ -8,13 +8,12 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.4",
     "copyfiles": "2.4.1",
-    "esbuild": "0.25.12",
     "live-server": "^1.2.0",
-    "shx": "0.4.0",
-    "simple-file-watch": "3.1.1"
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.4"
   },
   "scripts": {
-    "build": "esbuild app.mjs --bundle --minify --outfile=build/out.js",
+    "build": "webpack --config webpack.config.js",
     "format": "biome format --write .",
     "format-check": "biome format",
     "lint": "biome lint"

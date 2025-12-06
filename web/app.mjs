@@ -1,6 +1,6 @@
 import Graph from "graphology";
-import { circular } from "graphology-layout";
-import ForceAtlas2 from "graphology-layout-forceatlas2";
+import circular from "graphology-layout/circular.js";
+import ForceAtlas2 from "graphology-layout-forceatlas2/worker.js";
 import Sigma from "sigma";
 
 const container = document.getElementById("graph");
@@ -40,19 +40,23 @@ function resetRenderer(renderer) {
   return null;
 }
 
-function setNodeCoordinates(g, fa2Iterations) {
+let layout = null;
+
+function setNodeCoordinates(g) {
   circular.assign(g);
-  // const settings = ForceAtlas2.inferSettings(g);
   const settings = {
     gravity: 1,
     barnesHutOptimize: true,
   };
-  if (ForceAtlas2 && typeof ForceAtlas2.assign === "function") {
-    ForceAtlas2.assign(g, { iterations: fa2Iterations, settings: settings });
-  } else if (typeof ForceAtlas2 === "function") {
-    ForceAtlas2(g, { iterations: fa2Iterations, settings: settings });
-  } else {
-    console.warn("ForceAtlas2 layout not available");
+  if (layout && typeof layout.kill === "function") {
+    try {
+      layout.kill();
+    } catch (_e) {}
+  }
+  layout = new ForceAtlas2(g, { settings });
+  if (layout && typeof layout.start === "function") {
+    layout.start();
+    console.log("ForceAtlas2 layout started");
   }
 }
 
@@ -87,13 +91,13 @@ function initRenderer(g) {
   });
 }
 
-async function loadAndRender(path = "graph.json", fa2Iterations = 100) {
+async function loadAndRender(path = "graph.json") {
   const graph = await loadGraph(path);
   renderer = resetRenderer(renderer);
   if (!Graph) throw new Error("graphology not available");
   if (!Sigma) throw new Error("Sigma module not available");
   const g = jsonToGraph(graph);
-  setNodeCoordinates(g, fa2Iterations);
+  setNodeCoordinates(g);
   initRenderer(g);
 }
 
