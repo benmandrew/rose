@@ -8,6 +8,9 @@ services:
       dockerfile: docker/Dockerfile.graph
     volumes:
       - shared:/app/shared
+    environment:
+      BFS_MAX_DEPTH: "100"
+      BFS_TIMEOUT_S: "0.1"
     restart: "no"
     init: true
     healthcheck:
