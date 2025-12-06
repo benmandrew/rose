@@ -1,5 +1,5 @@
 import Graph from "graphology";
-import circular from "graphology-layout/circular.js";
+import random from "graphology-layout/random.js";
 import ForceAtlas2 from "graphology-layout-forceatlas2/worker.js";
 import Sigma from "sigma";
 
@@ -19,7 +19,7 @@ let currentGraph = null;
 let layout = null;
 
 const layoutSettings = {
-  gravity: 1,
+  gravity: 20,
   barnesHutOptimize: true,
 };
 
@@ -78,7 +78,7 @@ function stopLayout() {
 }
 
 function setNodeCoordinates(g) {
-  circular.assign(g);
+  random.assign(g);
   createLayout(g);
   startLayout();
 }
@@ -138,7 +138,11 @@ layoutToggleBtn.addEventListener("click", () => {
 window.addEventListener("keydown", (event) => {
   if (event.code === "Space" || event.key === " ") {
     event.preventDefault();
-    if (layout && typeof layout.isRunning === "function" && layout.isRunning()) {
+    if (
+      layout &&
+      typeof layout.isRunning === "function" &&
+      layout.isRunning()
+    ) {
       stopLayout();
     } else {
       startLayout();

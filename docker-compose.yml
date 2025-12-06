@@ -9,8 +9,8 @@ services:
     volumes:
       - shared:/app/shared
     environment:
-      BFS_MAX_DEPTH: "100"
-      BFS_TIMEOUT_S: "0.05"
+      BFS_MAX_DEPTH: "${BFS_MAX_DEPTH:-100}"
+      BFS_TIMEOUT_S: "${BFS_TIMEOUT_S:-0.05}"
     restart: "no"
     init: true
     healthcheck:
