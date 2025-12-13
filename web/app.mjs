@@ -1,5 +1,6 @@
 import Graph from "graphology";
-import random from "graphology-layout/random.js";
+// import random from "graphology-layout/random.js";
+import circular from "graphology-layout/circular.js";
 import ForceAtlas2 from "graphology-layout-forceatlas2/worker.js";
 import Sigma from "sigma";
 
@@ -78,7 +79,8 @@ function stopLayout() {
 }
 
 function setNodeCoordinates(g) {
-  random.assign(g);
+  circular.assign(g);
+  // random.assign(g);
   createLayout(g);
   startLayout();
 }
