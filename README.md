@@ -1,6 +1,6 @@
 # Rose
 
-Visualiser for Solitaire game graphs.
+Visualiser for Solitaire game graphs. You can interact with it online [here](https://benmandrew.com/articles/visualise-solitaire-game-graph).
 
 ![Screenshot](doc/screenshot.png)
 
