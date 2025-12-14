@@ -7,6 +7,9 @@ import Sigma from "sigma";
 const container = document.getElementById("graph");
 const tableView = document.getElementById("tableView");
 const layoutToggleBtn = document.getElementById("layoutToggleBtn");
+const loadSmallGraphBtn = document.getElementById("loadSmallGraphBtn");
+const loadLargeGraphBtn = document.getElementById("loadLargeGraphBtn");
+const loadDFSGraphBtn = document.getElementById("loadDFSGraphBtn");
 
 function resize() {
   container.style.width = `${window.innerWidth - 320}px`;
@@ -135,6 +138,18 @@ layoutToggleBtn.addEventListener("click", () => {
   } else {
     startLayout();
   }
+});
+
+loadSmallGraphBtn.addEventListener("click", () => {
+  loadAndRender("/assets/rose/small.json");
+});
+
+loadLargeGraphBtn.addEventListener("click", () => {
+  loadAndRender("/assets/rose/large.json");
+});
+
+loadDFSGraphBtn.addEventListener("click", () => {
+  loadAndRender("/assets/rose/dfs.json");
 });
 
 window.addEventListener("keydown", (event) => {
