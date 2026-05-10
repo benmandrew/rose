@@ -60,7 +60,7 @@ auto value_to_colour(size_t value, size_t max_depth, bool winning)
     return {buffer.data()};
 }
 
-using NodeList = std::vector<std::shared_ptr<const Node>>;
+using NodeList = std::vector<const Node*>;
 
 #define NODE_MIN_SIZE 1.0F
 #define NODE_MAX_SIZE 4.0F
@@ -104,7 +104,7 @@ auto build_ptr_to_id_map(const NodeList& nodes)
     std::unordered_map<const Node*, size_t> ptr_to_id;
     ptr_to_id.reserve(nodes.size());
     for (size_t i = 0; i < nodes.size(); ++i) {
-        ptr_to_id.emplace(nodes[i].get(), i);
+        ptr_to_id.emplace(nodes[i], i);
     }
     return ptr_to_id;
 }
@@ -118,7 +118,7 @@ auto serialise_edges(const NodeList& nodes) -> nlohmann::json {
         for (const auto& edge : node_ptr->m_edges) {
             nlohmann::json edge_json;
             edge_json["source"] = id;
-            const Node* to_ptr = edge.m_to.get();
+            const Node* to_ptr = edge.m_to;
             auto it = ptr_to_id.find(to_ptr);
             if (it == ptr_to_id.end()) {
                 // target node wasn't in the traversal (maybe beyond max depth)
@@ -138,7 +138,6 @@ auto graph_to_json(const Graph& graph, size_t max_depth) -> nlohmann::json {
     NodeList nodes;
     nodes.reserve(256);
     auto it = graph.begin();
-    auto owner = it.owner();
     auto end = graph.end();
     for (; it != end; ++it) {
         nodes.push_back(*it);

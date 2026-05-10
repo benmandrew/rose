@@ -10,6 +10,15 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(catch2)
 
+# AppleClang 21+ deprecates `operator "" _a` (space before UDL identifier).
+# Suppress the warning on Catch2's own targets so our -Werror doesn't break the build.
+foreach(_catch2_target Catch2 Catch2WithMain)
+    if(TARGET ${_catch2_target})
+        target_compile_options(${_catch2_target} PRIVATE
+            -Wno-deprecated-literal-operator)
+    endif()
+endforeach()
+
 
 file(GLOB TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/test_*.cpp

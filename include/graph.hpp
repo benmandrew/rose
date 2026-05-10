@@ -27,44 +27,41 @@ class Node {
 class Edge {
    public:
     Move m_move;
-    std::shared_ptr<Node> m_from;
-    std::shared_ptr<Node> m_to;
+    Node* m_from;
+    Node* m_to;
 
-    Edge(const Move& move, const std::shared_ptr<Node>& from,
-         const std::shared_ptr<Node>& to);
+    Edge(const Move& move, Node* from, Node* to);
 };
 
-using DepthNodeQueue = std::queue<std::pair<size_t, std::shared_ptr<Node>>>;
-using NodeQueue = std::queue<std::shared_ptr<Node>>;
-using NodeStack = std::stack<std::shared_ptr<Node>>;
+using DepthNodeQueue = std::queue<std::pair<size_t, Node*>>;
+using NodeQueue = std::queue<Node*>;
+using NodeStack = std::stack<Node*>;
 
 class NodeComparator {
    public:
     using is_transparent = void;
-    auto operator()(std::shared_ptr<Node> const& a,
-                    std::shared_ptr<Node> const& b) const -> bool {
+    auto operator()(Node* a, Node* b) const -> bool {
         return a->m_table.hash() < b->m_table.hash();
     }
-    auto operator()(std::shared_ptr<Node> const& a, Table const& b) const
-        -> bool {
+    auto operator()(Node* a, Table const& b) const -> bool {
         return a->m_table.hash() < b.hash();
     }
-    auto operator()(Table const& a, std::shared_ptr<Node> const& b) const
-        -> bool {
+    auto operator()(Table const& a, Node* b) const -> bool {
         return a.hash() < b->m_table.hash();
     }
 };
 
 class Graph {
    private:
-    std::set<std::shared_ptr<Node>, NodeComparator> m_seen_nodes;
-    std::shared_ptr<Node> m_root;
+    std::vector<std::unique_ptr<Node>> m_arena;
+    std::set<Node*, NodeComparator> m_seen_nodes;
+    Node* m_root;
 
-    auto generate_next_tables_bfs(DepthNodeQueue& node_queue,
-                                  const std::shared_ptr<Node>& node,
+    auto make_node(const Table& table, size_t depth) -> Node*;
+
+    auto generate_next_tables_bfs(DepthNodeQueue& node_queue, Node* node,
                                   size_t current_depth) -> DepthNodeQueue&;
-    auto generate_next_tables_dfs(NodeStack& node_stack,
-                                  const std::shared_ptr<Node>& node,
+    auto generate_next_tables_dfs(NodeStack& node_stack, Node* node,
                                   size_t current_depth) -> NodeStack&;
 
    public:
@@ -78,11 +75,8 @@ class Graph {
     auto generate_dfs() -> void;
 
     struct Iterator {
-        Iterator(
-            std::shared_ptr<Graph> graph_ptr,
-            std::unique_ptr<NodeQueue> node_queue_ptr,
-            std::unique_ptr<std::set<std::shared_ptr<Node>, NodeComparator>>
-                seen_nodes);
+        Iterator(std::unique_ptr<NodeQueue> node_queue_ptr,
+                 std::unique_ptr<std::set<Node*, NodeComparator>> seen_nodes);
         Iterator(const Iterator& other);
         Iterator(Iterator&& other) noexcept;
         Iterator() = default;
@@ -92,44 +86,37 @@ class Graph {
 
         using iterator_concept = std::forward_iterator_tag;
         using iterator_category = std::forward_iterator_tag;
-        using value_type = std::shared_ptr<Node>;
+        using value_type = Node*;
         using difference_type = std::ptrdiff_t;
-        using reference = const value_type&;
-        using pointer = const value_type*;
+        using reference = Node* const&;
+        using pointer = Node*;
 
         auto operator++() -> Iterator&;
         auto operator++(int) -> Iterator;
         auto operator==(const Iterator& other) const -> bool;
         auto operator!=(const Iterator& other) const -> bool;
         auto operator*() -> reference;
-        auto operator*() const -> const value_type&;
+        auto operator*() const -> reference;
         auto operator->() -> pointer;
-        auto operator->() const -> const value_type*;
-        [[nodiscard]] auto owner() const -> std::shared_ptr<Graph>;
+        auto operator->() const -> pointer;
 
        private:
-        std::shared_ptr<Graph> m_graph_ptr;
         std::unique_ptr<NodeQueue> m_node_queue;
-        std::unique_ptr<std::set<std::shared_ptr<Node>, NodeComparator>>
-            m_seen_nodes;
+        std::unique_ptr<std::set<Node*, NodeComparator>> m_seen_nodes;
     };
 
     auto begin() -> Iterator {
-        auto graph_copy = std::make_shared<Graph>(*this);
         auto node_queue = std::make_unique<NodeQueue>();
-        auto seen_nodes =
-            std::make_unique<std::set<std::shared_ptr<Node>, NodeComparator>>();
-        node_queue->emplace(graph_copy->m_root);
-        return {graph_copy, std::move(node_queue), std::move(seen_nodes)};
+        auto seen_nodes = std::make_unique<std::set<Node*, NodeComparator>>();
+        node_queue->emplace(m_root);
+        return {std::move(node_queue), std::move(seen_nodes)};
     }
 
     [[nodiscard]] auto begin() const -> Iterator {
         return const_cast<Graph*>(this)->begin();
     }
 
-    auto end() -> Iterator {
-        return {std::make_shared<Graph>(*this), nullptr, nullptr};
-    }
+    auto end() -> Iterator { return {nullptr, nullptr}; }
 
     [[nodiscard]] auto end() const -> Iterator {
         return const_cast<Graph*>(this)->end();
