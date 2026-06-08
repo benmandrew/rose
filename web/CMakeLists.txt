@@ -40,6 +40,20 @@ if(NPM_EXECUTABLE)
         COMMAND ${NPM_EXECUTABLE} run lint
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Linting web sources (biome)")
+    set(SITE_EXAMPLES_PATH "/assets/rose/examples"
+        CACHE STRING "Base URL for example JSON files in the site build")
+
+    set(SITE_DIST_DIR ${CMAKE_CURRENT_BINARY_DIR}/site)
+
+    add_custom_target(site
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${SITE_DIST_DIR}
+        COMMAND ${NPM_EXECUTABLE} run --quiet build --
+            --env examplesPath=${SITE_EXAMPLES_PATH}
+            --env outputPath=${SITE_DIST_DIR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Building site assets"
+        DEPENDS web_install_deps)
+
 else()
     message(WARNING "npm not found; web build/format/lint targets will be no-ops")
     add_custom_target(web_install_deps COMMENT "npm not found; skipping web_install_deps")
@@ -47,4 +61,5 @@ else()
     add_custom_target(web_format COMMENT "npm not found; skipping web_format")
     add_custom_target(web_format_check COMMENT "npm not found; skipping web_format_check")
     add_custom_target(web_lint COMMENT "npm not found; skipping web_lint")
+    add_custom_target(site COMMENT "npm not found; skipping site")
 endif()

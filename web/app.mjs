@@ -135,17 +135,18 @@ const loadSmallGraphBtn = document.getElementById("loadSmallGraphBtn");
 const loadLargeGraphBtn = document.getElementById("loadLargeGraphBtn");
 const loadDFSGraphBtn = document.getElementById("loadDFSGraphBtn");
 
+const ep = process.env.ROSE_EXAMPLES_PATH;
 if (loadSmallGraphBtn)
   loadSmallGraphBtn.addEventListener("click", () =>
-    loadAndRender("examples/small.json"),
+    loadAndRender(`${ep}/small.json`),
   );
 if (loadLargeGraphBtn)
   loadLargeGraphBtn.addEventListener("click", () =>
-    loadAndRender("examples/large.json"),
+    loadAndRender(`${ep}/large.json`),
   );
 if (loadDFSGraphBtn)
   loadDFSGraphBtn.addEventListener("click", () =>
-    loadAndRender("examples/dfs.json"),
+    loadAndRender(`${ep}/dfs.json`),
   );
 
 layoutToggleBtn.addEventListener("click", () => {

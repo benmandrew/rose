@@ -1,10 +1,13 @@
 const path = require("path");
+const webpack = require("webpack");
 
-module.exports = {
+module.exports = (env = {}) => ({
   mode: "production",
   entry: path.resolve(__dirname, "app.mjs"),
   output: {
-    path: path.resolve(__dirname, "build"),
+    path: env.outputPath
+      ? path.resolve(env.outputPath)
+      : path.resolve(__dirname, "build"),
     filename: "out.js",
     chunkFilename: "chunks/[name]-[contenthash].js",
     clean: true,
@@ -21,4 +24,11 @@ module.exports = {
       },
     ],
   },
-};
+  plugins: [
+    new webpack.DefinePlugin({
+      "process.env.ROSE_EXAMPLES_PATH": JSON.stringify(
+        env.examplesPath ?? "examples",
+      ),
+    }),
+  ],
+});
