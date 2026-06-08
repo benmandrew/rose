@@ -127,7 +127,9 @@ async function loadAndRender(path = "graph.json") {
   layoutToggleBtn.textContent = "Stop layout";
 }
 
-loadAndRender();
+const appEl = document.getElementById("app");
+const defaultGraph = appEl?.dataset.defaultGraph ?? "graph.json";
+loadAndRender(defaultGraph);
 
 const loadSmallGraphBtn = document.getElementById("loadSmallGraphBtn");
 const loadLargeGraphBtn = document.getElementById("loadLargeGraphBtn");
