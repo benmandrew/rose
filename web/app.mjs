@@ -116,7 +116,7 @@ function initRenderer(g) {
   });
 }
 
-async function loadAndRender(path = "graph.json") {
+async function loadAndRender(path = "examples/graph.json") {
   const graph = await loadGraph(path);
   renderer = resetRenderer(renderer);
   if (!Graph) throw new Error("graphology not available");
