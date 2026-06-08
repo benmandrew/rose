@@ -116,7 +116,7 @@ function initRenderer(g) {
   });
 }
 
-async function loadAndRender(path = "examples/graph.json") {
+async function loadAndRender(path = "graph.json") {
   const graph = await loadGraph(path);
   renderer = resetRenderer(renderer);
   if (!Graph) throw new Error("graphology not available");
@@ -128,6 +128,23 @@ async function loadAndRender(path = "examples/graph.json") {
 }
 
 loadAndRender();
+
+const loadSmallGraphBtn = document.getElementById("loadSmallGraphBtn");
+const loadLargeGraphBtn = document.getElementById("loadLargeGraphBtn");
+const loadDFSGraphBtn = document.getElementById("loadDFSGraphBtn");
+
+if (loadSmallGraphBtn)
+  loadSmallGraphBtn.addEventListener("click", () =>
+    loadAndRender("examples/small.json"),
+  );
+if (loadLargeGraphBtn)
+  loadLargeGraphBtn.addEventListener("click", () =>
+    loadAndRender("examples/large.json"),
+  );
+if (loadDFSGraphBtn)
+  loadDFSGraphBtn.addEventListener("click", () =>
+    loadAndRender("examples/dfs.json"),
+  );
 
 layoutToggleBtn.addEventListener("click", () => {
   if (layout && typeof layout.isRunning === "function" && layout.isRunning()) {
