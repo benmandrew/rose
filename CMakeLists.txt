@@ -10,10 +10,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-string(APPEND CMAKE_CXX_FLAGS " -Wall")
-string(APPEND CMAKE_CXX_FLAGS " -Wbuiltin-macro-redefined")
-string(APPEND CMAKE_CXX_FLAGS " -pedantic")
-string(APPEND CMAKE_CXX_FLAGS " -Werror")
+# Strict warnings, scoped to our own targets via an INTERFACE library rather
+# than the global CMAKE_CXX_FLAGS. Putting -Werror in the global flags leaked
+# it into third-party dependency builds (fmt, nlohmann_json, Catch2), whose
+# code we don't control and which trips warnings under some compilers (e.g.
+# GCC 13's <regex> -Wmaybe-uninitialized, AppleClang's deprecated UDL operator).
+add_library(rose_warnings INTERFACE)
+target_compile_options(rose_warnings INTERFACE
+    -Wall
+    -Wbuiltin-macro-redefined
+    -pedantic
+    -Werror)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type specified. Defaulting to Debug. To get a release build, run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release")
@@ -53,6 +60,9 @@ target_include_directories(rose_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 target_link_libraries(rose_lib PUBLIC fmt::fmt nlohmann_json::nlohmann_json)
+# PUBLIC so the strict warnings propagate to our own consumers (rose,
+# unittests) without reaching the third-party libraries above.
+target_link_libraries(rose_lib PUBLIC rose_warnings)
 
 find_package(fmt CONFIG QUIET)
 if (NOT TARGET fmt::fmt)
