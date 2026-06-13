@@ -5,35 +5,54 @@ on:
 
 jobs:
   graph:
-    name: Graph Build
+    name: Graph Build (${{ matrix.compiler }}, ${{ matrix.preset }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        preset: [debug, release]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake clang-format
+        sudo apt-get install -y build-essential cmake clang clang-format
+    - name: Select compiler
+      # CMake reads CC/CXX from the environment on the first configure of a
+      # build directory and bakes the choice into the cache, so the preset
+      # itself stays compiler-agnostic.
+      run: |
+        if [ "${{ matrix.compiler }}" = "clang" ]; then
+          echo "CC=clang"   >> "$GITHUB_ENV"
+          echo "CXX=clang++" >> "$GITHUB_ENV"
+        else
+          echo "CC=gcc" >> "$GITHUB_ENV"
+          echo "CXX=g++" >> "$GITHUB_ENV"
+        fi
     - name: Cache CMake dependencies (FetchContent)
       uses: actions/cache@v4
       with:
-        path: build/_deps
-        key: ${{ runner.os }}-cmake-deps-${{ github.repository }}-${{ hashFiles('**/CMakeLists.txt') }}
+        path: build/${{ matrix.preset }}/_deps
+        key: ${{ runner.os }}-cmake-deps-${{ matrix.compiler }}-${{ matrix.preset }}-${{ github.repository }}-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
-          ${{ runner.os }}-cmake-deps-${{ github.repository }}-
+          ${{ runner.os }}-cmake-deps-${{ matrix.compiler }}-${{ matrix.preset }}-${{ github.repository }}-
     - name: Check clang-format
       run: |
         echo "Running clang-format --dry-run"
         git ls-files '*.cpp' '*.h' '*.hpp' | xargs -r clang-format -style=file -n
+    - name: Reduce ASLR entropy for AddressSanitizer
+      # Newer Ubuntu runners use high-entropy ASLR which can stop ASan from
+      # mapping its shadow memory. Lowering mmap_rnd_bits keeps the Debug
+      # preset's sanitizers usable. No-op for the Release preset.
+      run: sudo sysctl -w vm.mmap_rnd_bits=28
     - name: Configure
-      run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      run: cmake --preset ${{ matrix.preset }}
     - name: Build
-      run: |
-        cmake --build build -j
+      run: cmake --build --preset ${{ matrix.preset }} -j
     - name: Run tests
-      run: |
-        ctest --test-dir build --output-on-failure
+      run: ctest --preset ${{ matrix.preset }}
 
   web:
     name: Web Build
