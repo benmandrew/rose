@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <iterator>
 #include <memory>
 #include <queue>
@@ -36,6 +37,9 @@ class Edge {
 using DepthNodeQueue = std::queue<std::pair<size_t, Node*>>;
 using NodeQueue = std::queue<Node*>;
 using NodeStack = std::stack<Node*>;
+using AStarQueue = std::priority_queue<std::pair<size_t, Node*>,
+                                       std::vector<std::pair<size_t, Node*>>,
+                                       std::greater<std::pair<size_t, Node*>>>;
 
 class NodeComparator {
    public:
@@ -63,6 +67,8 @@ class Graph {
                                   size_t current_depth) -> DepthNodeQueue&;
     auto generate_next_tables_dfs(NodeStack& node_stack, Node* node,
                                   size_t current_depth) -> NodeStack&;
+    auto expand_node_astar(AStarQueue& frontier, Node* node,
+                           size_t current_depth, bool use_g) -> void;
 
    public:
     explicit Graph(const Table& initial_table);
@@ -73,6 +79,15 @@ class Graph {
                                   std::optional<float> timeout = std::nullopt)
         -> size_t;
     auto generate_dfs() -> void;
+    // Greedy best-first: expands the state with the lowest state_heuristic
+    // first. Explores promising branches early within a fixed node budget.
+    auto generate_bestfirst(size_t depth = SIZE_MAX,
+                            std::optional<float> timeout = std::nullopt)
+        -> size_t;
+    // A* search: expands by f = g + h where g is depth and h is
+    // foundation_heuristic (admissible). Finds shorter winning paths first.
+    auto generate_astar(size_t depth = SIZE_MAX,
+                        std::optional<float> timeout = std::nullopt) -> size_t;
 
     struct Iterator {
         Iterator(std::unique_ptr<NodeQueue> node_queue_ptr,

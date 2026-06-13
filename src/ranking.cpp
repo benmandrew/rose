@@ -94,3 +94,57 @@ auto compare_moves(const Move& a, const Move& b, const Table& table) -> bool {
     return static_cast<size_t>(move_value(a, table)) <
            static_cast<size_t>(move_value(b, table));
 }
+
+auto foundation_heuristic(const Table& table) -> size_t {
+    size_t on_foundation = 0;
+    for (size_t suit = 0; suit < c_num_suits; suit++) {
+        uint8_t top = table.m_foundation_indices[suit];
+        if (top != c_null_index) {
+            auto [_, rank] = index_to_card(static_cast<size_t>(top));
+            on_foundation += rank + 1;
+        }
+    }
+    return c_num_cards - on_foundation;
+}
+
+// Weights for the informative (non-admissible) components.
+#define HIDDEN_CARD_WEIGHT 1
+#define BLOCKED_CARD_WEIGHT 2
+#define EMPTY_COLUMN_BONUS 3
+
+auto state_heuristic(const Table& table) -> size_t {
+    size_t h = foundation_heuristic(table);
+
+    size_t hidden_count = 0;
+    size_t blocked_count = 0;
+    size_t empty_columns = 0;
+
+    for (size_t col = 0; col < c_tableau_columns; col++) {
+        hidden_count += table.n_cards_in_hidden_tableau_column(col);
+
+        uint8_t top = table.m_tableau_visible_indices[col];
+        if (top == c_null_index) {
+            if (table.m_tableau_hidden_indices[col] == c_null_index) {
+                empty_columns++;
+            }
+        } else {
+            bool can_move = table.can_be_placed_on_foundation(top);
+            for (size_t to = 0; !can_move && to < c_tableau_columns; to++) {
+                if (to != col) {
+                    can_move = table.can_be_placed_on_tableau(to, top);
+                }
+            }
+            if (!can_move) {
+                blocked_count++;
+            }
+        }
+    }
+
+    h += HIDDEN_CARD_WEIGHT * hidden_count;
+    h += BLOCKED_CARD_WEIGHT * blocked_count;
+    // Empty columns are beneficial: cap subtraction so h stays non-negative.
+    size_t bonus = EMPTY_COLUMN_BONUS * empty_columns;
+    h = (bonus < h) ? (h - bonus) : 0;
+
+    return h;
+}
