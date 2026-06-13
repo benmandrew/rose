@@ -1,6 +1,7 @@
 
 #include "table.hpp"
 
+#include <fmt/compile.h>
 #include <fmt/format.h>
 
 #include <algorithm>
@@ -119,7 +120,7 @@ auto Table::tableau_to_string() const -> std::string {
     for (const auto& row : table) {
         for (uint8_t card : row) {
             if (card != c_null_index) {
-                fmt::format_to(std::back_inserter(result), "{:^5}",
+                fmt::format_to(std::back_inserter(result), FMT_COMPILE("{:^5}"),
                                card_to_string(card));
             } else {
                 result += "     ";
@@ -133,17 +134,17 @@ auto Table::tableau_to_string() const -> std::string {
 auto Table::header_to_string() const -> std::string {
     std::string result;
     if (m_stock_index == c_null_index) {
-        fmt::format_to(std::back_inserter(result), "Stock: {:<3}",
+        fmt::format_to(std::back_inserter(result), FMT_COMPILE("Stock: {:<3}"),
                        c_no_card_string);
     } else {
-        fmt::format_to(std::back_inserter(result), "Stock: {:<3}",
+        fmt::format_to(std::back_inserter(result), FMT_COMPILE("Stock: {:<3}"),
                        c_hidden_card_string);
     }
-    fmt::format_to(std::back_inserter(result), "Waste: {:<3}",
+    fmt::format_to(std::back_inserter(result), FMT_COMPILE("Waste: {:<3}"),
                    card_to_string(m_waste_index));
-    fmt::format_to(std::back_inserter(result), "Foundations: ");
+    result += "Foundations: ";
     for (size_t suit = 0; suit < c_num_suits; suit++) {
-        fmt::format_to(std::back_inserter(result), "{:<4}",
+        fmt::format_to(std::back_inserter(result), FMT_COMPILE("{:<4}"),
                        card_to_string(m_foundation_indices[suit]));
     }
     result += "\n";
