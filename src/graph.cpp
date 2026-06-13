@@ -10,7 +10,7 @@
 #include "table.hpp"
 
 Node::Node(const Table& table, size_t depth)
-    : m_table(table), m_depth(depth), m_deadend(true) {}
+    : m_table(table), m_depth(depth), m_deadend(true), m_hash(table.hash()) {}
 
 Edge::Edge(const Move& move, Node* from, Node* to)
     : m_move(move), m_from(from), m_to(to) {

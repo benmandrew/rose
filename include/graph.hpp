@@ -21,6 +21,9 @@ class Node {
     std::vector<Edge> m_edges;
     size_t m_depth;
     bool m_deadend;
+    // Cached at construction: the node's table never mutates afterwards, so the
+    // hash is computed once instead of on every set comparison.
+    std::size_t m_hash;
 
     Node(const Table& table, size_t depth);
 };
@@ -45,13 +48,13 @@ class NodeComparator {
    public:
     using is_transparent = void;
     auto operator()(Node* a, Node* b) const -> bool {
-        return a->m_table.hash() < b->m_table.hash();
+        return a->m_hash < b->m_hash;
     }
     auto operator()(Node* a, Table const& b) const -> bool {
-        return a->m_table.hash() < b.hash();
+        return a->m_hash < b.hash();
     }
     auto operator()(Table const& a, Node* b) const -> bool {
-        return a.hash() < b->m_table.hash();
+        return a.hash() < b->m_hash;
     }
 };
 
