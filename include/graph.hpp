@@ -5,8 +5,8 @@
 #include <iterator>
 #include <memory>
 #include <queue>
-#include <set>
 #include <stack>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -44,24 +44,35 @@ using AStarQueue = std::priority_queue<std::pair<size_t, Node*>,
                                        std::vector<std::pair<size_t, Node*>>,
                                        std::greater<std::pair<size_t, Node*>>>;
 
-class NodeComparator {
-   public:
+// Hash and equality for an unordered_set keyed on a node's table. Equality
+// falls back to a full Table comparison, so hash collisions no longer cause
+// distinct states to be silently treated as already-seen. is_transparent
+// enables heterogeneous lookup with a bare Table (no temporary Node needed).
+struct NodeHash {
     using is_transparent = void;
-    auto operator()(Node* a, Node* b) const -> bool {
-        return a->m_hash < b->m_hash;
+    auto operator()(const Node* n) const -> std::size_t { return n->m_hash; }
+    auto operator()(const Table& t) const -> std::size_t { return t.hash(); }
+};
+
+struct NodeEq {
+    using is_transparent = void;
+    auto operator()(const Node* a, const Node* b) const -> bool {
+        return a->m_table == b->m_table;
     }
-    auto operator()(Node* a, Table const& b) const -> bool {
-        return a->m_hash < b.hash();
+    auto operator()(const Node* a, const Table& b) const -> bool {
+        return a->m_table == b;
     }
-    auto operator()(Table const& a, Node* b) const -> bool {
-        return a.hash() < b->m_hash;
+    auto operator()(const Table& a, const Node* b) const -> bool {
+        return a == b->m_table;
     }
 };
+
+using NodeSet = std::unordered_set<Node*, NodeHash, NodeEq>;
 
 class Graph {
    private:
     std::vector<std::unique_ptr<Node>> m_arena;
-    std::set<Node*, NodeComparator> m_seen_nodes;
+    NodeSet m_seen_nodes;
     Node* m_root;
 
     auto make_node(const Table& table, size_t depth) -> Node*;
@@ -94,7 +105,7 @@ class Graph {
 
     struct Iterator {
         Iterator(std::unique_ptr<NodeQueue> node_queue_ptr,
-                 std::unique_ptr<std::set<Node*, NodeComparator>> seen_nodes);
+                 std::unique_ptr<NodeSet> seen_nodes);
         Iterator(const Iterator& other);
         Iterator(Iterator&& other) noexcept;
         Iterator() = default;
@@ -120,12 +131,12 @@ class Graph {
 
        private:
         std::unique_ptr<NodeQueue> m_node_queue;
-        std::unique_ptr<std::set<Node*, NodeComparator>> m_seen_nodes;
+        std::unique_ptr<NodeSet> m_seen_nodes;
     };
 
     auto begin() -> Iterator {
         auto node_queue = std::make_unique<NodeQueue>();
-        auto seen_nodes = std::make_unique<std::set<Node*, NodeComparator>>();
+        auto seen_nodes = std::make_unique<NodeSet>();
         node_queue->emplace(m_root);
         return {std::move(node_queue), std::move(seen_nodes)};
     }

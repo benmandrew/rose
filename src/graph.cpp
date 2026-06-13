@@ -159,9 +159,8 @@ auto Graph::generate_dfs() -> void {
     }
 }
 
-Graph::Iterator::Iterator(
-    std::unique_ptr<NodeQueue> node_queue_ptr,
-    std::unique_ptr<std::set<Node*, NodeComparator>> seen_nodes)
+Graph::Iterator::Iterator(std::unique_ptr<NodeQueue> node_queue_ptr,
+                          std::unique_ptr<NodeSet> seen_nodes)
     : m_node_queue(std::move(node_queue_ptr)),
       m_seen_nodes(std::move(seen_nodes)) {}
 
@@ -170,8 +169,7 @@ Graph::Iterator::Iterator(const Iterator& other) {
         m_node_queue = std::make_unique<NodeQueue>(*other.m_node_queue);
     }
     if (other.m_seen_nodes) {
-        m_seen_nodes = std::make_unique<std::set<Node*, NodeComparator>>(
-            *other.m_seen_nodes);
+        m_seen_nodes = std::make_unique<NodeSet>(*other.m_seen_nodes);
     }
 }
 
@@ -189,8 +187,7 @@ auto Graph::Iterator::operator=(const Iterator& other) -> Iterator& {
         m_node_queue.reset();
     }
     if (other.m_seen_nodes) {
-        m_seen_nodes = std::make_unique<std::set<Node*, NodeComparator>>(
-            *other.m_seen_nodes);
+        m_seen_nodes = std::make_unique<NodeSet>(*other.m_seen_nodes);
     } else {
         m_seen_nodes.reset();
     }
