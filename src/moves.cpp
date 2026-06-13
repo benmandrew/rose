@@ -290,8 +290,7 @@ auto waste_to_foundation(Table& table) -> Table& {
     uint8_t foundation_top =
         table.m_foundation_indices[static_cast<size_t>(suit)];
     table.m_waste_index = table.m_deck[static_cast<size_t>(waste_top)];
-    table.m_deck[static_cast<size_t>(waste_top)] =
-        table.m_foundation_indices[foundation_top];
+    table.m_deck[static_cast<size_t>(waste_top)] = foundation_top;
     table.m_foundation_indices[static_cast<size_t>(suit)] = waste_top;
     return table;
 }
@@ -318,8 +317,7 @@ auto tableau_to_foundation(Table& table, size_t from_col) -> Table& {
     if (table.m_tableau_visible_indices[from_col] == c_null_index) {
         table.move_from_hidden_to_visible(from_col);
     }
-    table.m_deck[static_cast<size_t>(tableau_top)] =
-        table.m_foundation_indices[foundation_top];
+    table.m_deck[static_cast<size_t>(tableau_top)] = foundation_top;
     table.m_foundation_indices[static_cast<size_t>(suit)] = tableau_top;
     return table;
 }
