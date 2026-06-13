@@ -10,7 +10,7 @@
 #include "table.hpp"
 
 Node::Node(const Table& table, size_t depth)
-    : m_table(table), m_depth(depth), m_deadend(true) {}
+    : m_table(table), m_depth(depth), m_deadend(true), m_hash(table.hash()) {}
 
 Edge::Edge(const Move& move, Node* from, Node* to)
     : m_move(move), m_from(from), m_to(to) {
@@ -159,9 +159,8 @@ auto Graph::generate_dfs() -> void {
     }
 }
 
-Graph::Iterator::Iterator(
-    std::unique_ptr<NodeQueue> node_queue_ptr,
-    std::unique_ptr<std::set<Node*, NodeComparator>> seen_nodes)
+Graph::Iterator::Iterator(std::unique_ptr<NodeQueue> node_queue_ptr,
+                          std::unique_ptr<NodeSet> seen_nodes)
     : m_node_queue(std::move(node_queue_ptr)),
       m_seen_nodes(std::move(seen_nodes)) {}
 
@@ -170,8 +169,7 @@ Graph::Iterator::Iterator(const Iterator& other) {
         m_node_queue = std::make_unique<NodeQueue>(*other.m_node_queue);
     }
     if (other.m_seen_nodes) {
-        m_seen_nodes = std::make_unique<std::set<Node*, NodeComparator>>(
-            *other.m_seen_nodes);
+        m_seen_nodes = std::make_unique<NodeSet>(*other.m_seen_nodes);
     }
 }
 
@@ -189,8 +187,7 @@ auto Graph::Iterator::operator=(const Iterator& other) -> Iterator& {
         m_node_queue.reset();
     }
     if (other.m_seen_nodes) {
-        m_seen_nodes = std::make_unique<std::set<Node*, NodeComparator>>(
-            *other.m_seen_nodes);
+        m_seen_nodes = std::make_unique<NodeSet>(*other.m_seen_nodes);
     } else {
         m_seen_nodes.reset();
     }
@@ -269,3 +266,102 @@ auto Graph::Iterator::operator->() const -> pointer {
 }
 
 static_assert(std::forward_iterator<Graph::Iterator>);
+
+// Shared expansion step for best-first and A*. Enqueues each unvisited
+// successor with priority = h (best-first) or g+h (A*).
+auto Graph::expand_node_astar(AStarQueue& frontier, Node* node,
+                              size_t current_depth, bool use_g) -> void {
+    auto possible_moves = generate_moves(node->m_table);
+    for (const auto& move : possible_moves) {
+        Table new_table = node->m_table;
+        apply_move(new_table, move);
+        if (auto search = m_seen_nodes.find(new_table);
+            search != m_seen_nodes.end()) {
+            bool edge_exists =
+                std::any_of(node->m_edges.begin(), node->m_edges.end(),
+                             [&move](const Edge& e) { return e.m_move == move; });
+            if (!edge_exists) {
+                node->m_edges.emplace_back(move, node, *search);
+            }
+            continue;
+        }
+        size_t new_depth = current_depth + 1;
+        Node* new_node = make_node(new_table, new_depth);
+        m_seen_nodes.insert(new_node);
+        node->m_edges.emplace_back(move, node, new_node);
+        size_t h = use_g ? foundation_heuristic(new_table)
+                         : state_heuristic(new_table);
+        size_t priority = use_g ? (new_depth + h) : h;
+        frontier.emplace(priority, new_node);
+    }
+}
+
+auto Graph::generate_bestfirst(size_t depth, std::optional<float> timeout)
+    -> size_t {
+    if (!m_seen_nodes.contains(m_root)) {
+        m_seen_nodes.insert(m_root);
+    }
+    AStarQueue frontier;
+    frontier.emplace(state_heuristic(m_root->m_table), m_root);
+    size_t iteration = 0;
+    size_t max_depth_found = 0;
+    size_t start_time = get_now();
+    while (!frontier.empty()) {
+        auto [priority, current_node] = frontier.top();
+        frontier.pop();
+        size_t current_depth = current_node->m_depth;
+        if (current_depth > max_depth_found) {
+            max_depth_found = current_depth;
+        }
+        if (timeout && iteration % TIMEOUT_CHECK_FREQUENCY == 0) {
+            size_t elapsed = get_now() - start_time;
+            if (elapsed >= static_cast<size_t>(*timeout * 1000)) {
+                std::cout << "Timeout reached after "
+                          << static_cast<double>(elapsed) / 1000.0
+                          << " seconds\n";
+                return max_depth_found;
+            }
+        }
+        if (current_depth < depth) {
+            expand_node_astar(frontier, current_node, current_depth,
+                              /*use_g=*/false);
+        }
+        iteration++;
+    }
+    return max_depth_found;
+}
+
+auto Graph::generate_astar(size_t depth, std::optional<float> timeout)
+    -> size_t {
+    if (!m_seen_nodes.contains(m_root)) {
+        m_seen_nodes.insert(m_root);
+    }
+    AStarQueue frontier;
+    frontier.emplace(foundation_heuristic(m_root->m_table), m_root);
+    size_t iteration = 0;
+    size_t max_depth_found = 0;
+    size_t start_time = get_now();
+    while (!frontier.empty()) {
+        auto [priority, current_node] = frontier.top();
+        frontier.pop();
+        size_t current_depth = current_node->m_depth;
+        if (current_depth > max_depth_found) {
+            max_depth_found = current_depth;
+        }
+        if (timeout && iteration % TIMEOUT_CHECK_FREQUENCY == 0) {
+            size_t elapsed = get_now() - start_time;
+            if (elapsed >= static_cast<size_t>(*timeout * 1000)) {
+                std::cout << "Timeout reached after "
+                          << static_cast<double>(elapsed) / 1000.0
+                          << " seconds\n";
+                return max_depth_found;
+            }
+        }
+        if (current_depth < depth) {
+            expand_node_astar(frontier, current_node, current_depth,
+                              /*use_g=*/true);
+        }
+        iteration++;
+    }
+    return max_depth_found;
+}

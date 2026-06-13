@@ -54,6 +54,7 @@ _deps
 CMakeUserPresets.json
 
 build/
+build-prof/
 .vscode/
 .DS_Store
 .cache

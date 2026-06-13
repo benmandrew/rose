@@ -20,17 +20,21 @@ auto make_random_table() -> Table {
     return Table(deck);
 }
 
+enum class Algorithm { BFS, BestFirst, AStar };
+
 struct CmdArgs {
     std::filesystem::path out_dir;
     std::optional<std::filesystem::path> deck_file;
     std::optional<size_t> max_depth;
     std::optional<float> timeout;
     bool with_dfs{false};
+    Algorithm algorithm{Algorithm::BFS};
 };
 
-#define USAGE_MSG                                            \
-    "Usage: rose [--deck <deckfile>] [--max-depth <depth>] " \
-    "[--timeout <timeout>] [--with-dfs] <graph_output_directory>\n"
+#define USAGE_MSG                                                              \
+    "Usage: rose [--deck <deckfile>] [--max-depth <depth>] "                   \
+    "[--timeout <timeout>] [--with-dfs] "                                      \
+    "[--algorithm bfs|bestfirst|astar] <graph_output_directory>\n"
 
 auto parse_args(int argc, char** argv) -> CmdArgs {
     if (argc < 2) {
@@ -69,6 +73,23 @@ auto parse_args(int argc, char** argv) -> CmdArgs {
                 static_cast<float>(std::stof(std::string(a.substr(10))));
         } else if (a == "--with-dfs") {
             args.with_dfs = true;
+        } else if (a == "--algorithm") {
+            if (i + 1 >= argc) {
+                std::cerr << "--algorithm requires a value (bfs|bestfirst|astar)\n";
+                exit(1);
+            }
+            std::string_view algo = argv[++i];
+            if (algo == "bfs") {
+                args.algorithm = Algorithm::BFS;
+            } else if (algo == "bestfirst") {
+                args.algorithm = Algorithm::BestFirst;
+            } else if (algo == "astar") {
+                args.algorithm = Algorithm::AStar;
+            } else {
+                std::cerr << "Unknown algorithm: " << algo
+                          << " (expected bfs|bestfirst|astar)\n";
+                exit(1);
+            }
         } else if (a.rfind("--", 0) == 0) {
             std::cerr << "Unknown option: " << a << "\n";
             std::cerr << USAGE_MSG;
@@ -116,7 +137,19 @@ auto main(int argc, char* argv[]) -> int {
         generated_depth =
             graph.generate_bfs_on_existing(max_depth, parsed.timeout);
     } else {
-        generated_depth = graph.generate_bfs(max_depth, parsed.timeout);
+        switch (parsed.algorithm) {
+            case Algorithm::BestFirst:
+                generated_depth =
+                    graph.generate_bestfirst(max_depth, parsed.timeout);
+                break;
+            case Algorithm::AStar:
+                generated_depth =
+                    graph.generate_astar(max_depth, parsed.timeout);
+                break;
+            default:
+                generated_depth =
+                    graph.generate_bfs(max_depth, parsed.timeout);
+        }
     }
     std::cout << "Generated graph in "
               << static_cast<double>(get_now() - start_time) / 1000.0
