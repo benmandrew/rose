@@ -14,11 +14,25 @@ BFS_TIMEOUT_S=0.1 docker compose up
 
 Access the web app on [http://localhost:8080](http://localhost:8080).
 
-By default, the graph will be explored by a breadth-first search (BFS) until the timout. Alternatively, by setting `WITH_DFS=true` as below, it will first explore down a single path, depth-first, using a simple heuristic for the best move in each state. Once no more moves can be made, the BFS is done from every node in the path. Using this heuristic makes it possible to find the winning state, which will be labelled if found.
+By default, the graph will be explored by a breadth-first search (BFS) until the timeout. Alternatively, by setting `WITH_DFS=true` as below, it will first explore down a single path, depth-first, using a simple heuristic for the best move in each state. Once no more moves can be made, the BFS is done from every node in the path. Using this heuristic makes it possible to find the winning state, which will be labelled if found.
 
 ```bash
 WITH_DFS=true BFS_TIMEOUT_S=0.1 docker compose up
 ```
+
+### Search algorithm
+
+Set `ALGORITHM` to choose how the graph is explored (within the same depth/timeout budget):
+
+- `bfs` (default) — breadth-first search; explores every state level by level.
+- `bestfirst` — greedy best-first search ordered by a state heuristic (foundation progress, face-down cards, blocked cards, and free columns), biasing exploration toward promising states.
+- `astar` — A\* search ordered by depth plus an admissible foundation-distance heuristic, reaching winning states along shorter paths first.
+
+```bash
+ALGORITHM=astar BFS_TIMEOUT_S=0.1 docker compose up
+```
+
+`WITH_DFS=true` takes precedence over `ALGORITHM`. All three algorithms build the complete state graph for visualisation; they differ only in which states they expand first when the budget is limited.
 
 ## Build locally
 
