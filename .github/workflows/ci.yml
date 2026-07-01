@@ -17,10 +17,21 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake clang clang-format
+    - name: Install Nix
+      uses: cachix/install-nix-action@v30
+      with:
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+    - name: Cache Nix store
+      uses: nix-community/cache-nix-action@v6
+      with:
+        primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.nix', 'flake.lock') }}
+        restore-prefixes-first-match: nix-${{ runner.os }}-
+        gc-max-store-size-linux: 2G
+        purge: true
+        purge-prefixes: nix-${{ runner.os }}-
+        purge-created: 0
+        purge-primary-key: never
     - name: Select compiler
       # CMake reads CC/CXX from the environment on the first configure of a
       # build directory and bakes the choice into the cache, so the preset
@@ -43,18 +54,18 @@ jobs:
     - name: Check clang-format
       run: |
         echo "Running clang-format --dry-run"
-        git ls-files '*.cpp' '*.h' '*.hpp' | xargs -r clang-format -style=file -n
+        git ls-files '*.cpp' '*.h' '*.hpp' | xargs -r nix develop -c clang-format -style=file -n
     - name: Reduce ASLR entropy for AddressSanitizer
       # Newer Ubuntu runners use high-entropy ASLR which can stop ASan from
       # mapping its shadow memory. Lowering mmap_rnd_bits keeps the Debug
       # preset's sanitizers usable. No-op for the Release preset.
       run: sudo sysctl -w vm.mmap_rnd_bits=28
     - name: Configure
-      run: cmake --preset ${{ matrix.preset }}
+      run: nix develop -c cmake --preset ${{ matrix.preset }}
     - name: Build
-      run: cmake --build --preset ${{ matrix.preset }} -j
+      run: nix develop -c cmake --build --preset ${{ matrix.preset }} -j
     - name: Run tests
-      run: ctest --preset ${{ matrix.preset }}
+      run: nix develop -c ctest --preset ${{ matrix.preset }}
 
   web:
     name: Web Build
@@ -62,10 +73,21 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Install Nix
+      uses: cachix/install-nix-action@v30
       with:
-        node-version: '18'
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+    - name: Cache Nix store
+      uses: nix-community/cache-nix-action@v6
+      with:
+        primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.nix', 'flake.lock') }}
+        restore-prefixes-first-match: nix-${{ runner.os }}-
+        gc-max-store-size-linux: 2G
+        purge: true
+        purge-prefixes: nix-${{ runner.os }}-
+        purge-created: 0
+        purge-primary-key: never
     - name: Cache npm
       uses: actions/cache@v4
       with:
@@ -74,13 +96,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ github.repository }}-node-
     - name: Install web dependencies
-      run: npm ci
+      run: nix develop -c npm ci
       working-directory: web
     - name: Biome run lint
-      run: npx biome lint
+      run: nix develop -c npx biome lint
       working-directory: web
     - name: Biome check formatting
-      run: npx biome format
+      run: nix develop -c npx biome format
       working-directory: web
 
   docker:

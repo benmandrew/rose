@@ -36,9 +36,26 @@ ALGORITHM=astar BFS_TIMEOUT_S=0.1 docker compose up
 
 ## Build locally
 
+### With Nix (recommended)
+
+A `flake.nix` provides a dev shell with every tool the build needs
+(cmake, clang, cppcheck, cpplint, node/npm, fmt), pinned via `flake.lock`
+for reproducibility.
+
+```bash
+$ nix develop
+```
+
+Run any of the commands below inside that shell.
+
+### Without Nix
+
 Depends on:
 - `cmake`
+- a C++23 compiler (gcc or clang)
 - `npm`
+- `cpplint` and `cppcheck` (for the `lint` target)
+- `clang-format` (for the `format` target)
 
 ### Build
 
@@ -47,6 +64,13 @@ $ mkdir build
 $ cd build
 $ cmake ..
 $ cmake --build .
+```
+
+Or with CMake presets (also used by CI):
+
+```bash
+$ cmake --preset release
+$ cmake --build --preset release
 ```
 
 ### Run Tests
@@ -61,12 +85,8 @@ cmake --build . --target tests
 cmake --build . --target lint
 ```
 
-(Requires `cpplint` and `cppcheck`.)
-
 ### Format
 
 ```bash
 cmake --build . --target format
 ```
-
-(Requires `clang-format`.)
