@@ -18,12 +18,28 @@ body {
 }
 #graph {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
 }
 #sidebar {
   width: 320px;
+  flex-shrink: 0;
   border-left: 1px solid #DDDDDD;
   padding: 12px;
   box-sizing: border-box;
+  overflow-y: auto;
+}
+
+@media (max-width: 700px) {
+  #app {
+    flex-direction: column;
+  }
+  #sidebar {
+    width: 100%;
+    max-height: 40vh;
+    border-left: none;
+    border-top: 1px solid #DDDDDD;
+  }
 }
 h1 {
   font-size: 1.1rem;

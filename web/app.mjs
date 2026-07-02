@@ -5,14 +5,23 @@ import ForceAtlas2 from "graphology-layout-forceatlas2/worker.js";
 import Sigma from "sigma";
 
 const container = document.getElementById("graph");
+const sidebar = document.getElementById("sidebar");
 const tableView = document.getElementById("tableView");
 const layoutToggleBtn = document.getElementById("layoutToggleBtn");
 
+const mobileLayout = window.matchMedia("(max-width: 700px)");
+
 function resize() {
-  container.style.width = `${window.innerWidth - 320}px`;
-  container.style.height = `${window.innerHeight}px`;
+  if (mobileLayout.matches) {
+    container.style.width = "100%";
+    container.style.height = `${window.innerHeight - sidebar.offsetHeight}px`;
+  } else {
+    container.style.width = `${window.innerWidth - sidebar.offsetWidth}px`;
+    container.style.height = `${window.innerHeight}px`;
+  }
 }
 window.addEventListener("resize", resize);
+mobileLayout.addEventListener("change", resize);
 resize();
 
 let renderer = null;
