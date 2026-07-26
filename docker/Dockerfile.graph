@@ -1,5 +1,9 @@
 FROM ubuntu:22.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
+# `set -e` does not cover a failure on the left of a pipe, so without pipefail a
+# failed key fetch below would leave an empty keyring and surface later as an
+# opaque apt error rather than failing this layer.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake git ca-certificates wget gnupg && rm -rf /var/lib/apt/lists/*
 RUN set -eux; \
@@ -11,13 +15,23 @@ RUN set -eux; \
 
 ENV CC=clang-18
 ENV CXX=clang++-18
+# Explicit build root. This stage previously had no WORKDIR, so the source landed
+# in / and cmake's build dir came out at /build -- which the runtime stage's COPY
+# then depended on. Adding a WORKDIR later would have moved that path and broken
+# the COPY silently, so it is pinned here and referenced below.
+WORKDIR /src
 COPY --exclude=web . .
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_WEB=OFF
 RUN cmake --build build -j$(nproc)
 
 FROM debian:bookworm-slim
 WORKDIR /app
-COPY --from=builder /build/rose ./rose
-RUN mkdir -p /app/shared && chmod 755 /app
+COPY --from=builder /src/build/rose ./rose
+# Runs unprivileged. /app/shared is chowned before the VOLUME declaration so an
+# anonymous volume inherits the ownership; a bind mount carries the host's instead
+# and has to be writable by this uid.
+RUN groupadd --system rose && useradd --system --gid rose rose \
+    && mkdir -p /app/shared && chmod 755 /app && chown -R rose:rose /app
 VOLUME ["/app/shared"]
+USER rose
 ENTRYPOINT ["sh", "-c", "if [ \"${WITH_DFS:-false}\" = \"true\" ]; then DFS_FLAG=--with-dfs; else DFS_FLAG=; fi; /app/rose ${DFS_FLAG} --algorithm ${ALGORITHM:-bfs} --max-depth ${BFS_MAX_DEPTH:-5} --timeout ${BFS_TIMEOUT_S:-0.1} /app/shared && tail -F /dev/null"]

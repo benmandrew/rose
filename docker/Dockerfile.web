@@ -1,5 +1,17 @@
 FROM node:18-alpine
 WORKDIR /usr/src/app
+
+# live-server is this image's actual runtime, but it was never a declared
+# dependency of web/ -- the old `npx live-server` entrypoint resolved nothing
+# locally and fetched it from the registry on every single container start, so
+# the container needed working network at boot and its version could drift
+# between two runs of the same image. Installed once here instead, pinned.
+#
+# Deliberately a global install rather than an entry in web/package.json:
+# live-server 1.2.2 is unmaintained and pulls ~185 transitive packages, which
+# would more than double that lockfile for a dependency only this image needs.
+RUN npm install -g live-server@1.2.2
+
 COPY web/package.json web/package-lock.json* ./web/
 WORKDIR /usr/src/app/web
 COPY web/package.json web/package-lock.json ./
@@ -12,5 +24,13 @@ VOLUME ["/usr/src/app/shared"]
 
 RUN ln -sf /usr/src/app/shared/graph.json /usr/src/app/web/graph.json
 
+# Runs unprivileged as the `node` account the base image already ships. Ownership
+# is handed over after every root-owned step above (npm ci, the build, the symlink)
+# so nothing here needs to run as root at container start.
+RUN chown -R node:node /usr/src/app
+USER node
+
 EXPOSE 8080
-ENTRYPOINT ["npx", "live-server", "--port=8080", "--no-browser", "/usr/src/app/web"]
+# Invoked directly rather than through `npx`, so a missing binary is an
+# immediate failure instead of a silent registry fetch.
+ENTRYPOINT ["live-server", "--port=8080", "--no-browser", "/usr/src/app/web"]
